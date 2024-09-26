@@ -21,6 +21,8 @@ const AuthenticationFormLayout = (props: Props) => {
     displayInfoMessage(message, 3000, "text-white bg-primary");
   };
 
+  const googleIcon = ["fab", "google"];
+
   return (
     <div className={props.isLoading ? "loading" : ""}>
       <div className="center">
