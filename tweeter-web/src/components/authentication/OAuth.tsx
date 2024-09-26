@@ -49,7 +49,7 @@ const OAuthButton = (props: OAuthButtonProps) => {
         }
       >
         <FontAwesomeIcon
-          icon={["fab", `${props.platform.toLowerCase}`] as IconProp}
+          icon={["fab", `${props.platform.toLowerCase()}`] as IconProp}
         />
       </OverlayTrigger>
     </button>
