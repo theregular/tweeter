@@ -40,6 +40,8 @@ const AuthenticationFormLayout = (props: Props) => {
             <h1 className="h4 mb-3 fw-normal">Or</h1>
             <h1 className="h5 mb-3 fw-normal">{props.oAuthHeading}</h1>
 
+            {/* OAuth starts here */}
+
             <div className="text-center mb-3">
               <button
                 type="button"
@@ -126,6 +128,8 @@ const AuthenticationFormLayout = (props: Props) => {
                 </OverlayTrigger>
               </button>
             </div>
+
+            {/* OAuth ends here */}
 
             <div className="checkbox mb-3">
               <label>
