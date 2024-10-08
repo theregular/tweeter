@@ -1,6 +1,4 @@
 interface Props {
-  //   alias: string;
-  //   password: string;
   setAlias: (value: string) => void;
   setPassword: (value: string) => void;
   onEnter: (event: React.KeyboardEvent<HTMLElement>) => void;
