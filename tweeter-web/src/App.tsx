@@ -19,6 +19,7 @@ import StatusItemScroller from "./components/mainLayout/StatusItemScroller";
 import { StatusItemView } from "./presenter/StatusItemPresenter";
 import { FeedPresenter } from "./presenter/FeedPresenter";
 import { StoryPresenter } from "./presenter/StoryPresenter";
+import { LoginPresenter, LoginView } from "./presenter/LoginPresenter";
 
 const App = () => {
   const { currentUser, authToken } = useUserInfo();
@@ -104,9 +105,24 @@ const UnauthenticatedRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route
+        path="/login"
+        element={
+          <Login
+            presenterGenerator={(view: LoginView) => new LoginPresenter(view)}
+          />
+        }
+      />
       <Route path="/register" element={<Register />} />
-      <Route path="*" element={<Login originalUrl={location.pathname} />} />
+      <Route
+        path="*"
+        element={
+          <Login
+            presenterGenerator={(view: LoginView) => new LoginPresenter(view)}
+            originalUrl={location.pathname}
+          />
+        }
+      />
     </Routes>
   );
 };
