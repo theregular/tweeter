@@ -4,6 +4,7 @@ export interface View {
 
 export class Presenter<V extends View> {
   private _view: V;
+  public isLoading = false;
 
   protected constructor(view: V) {
     this._view = view;
@@ -23,6 +24,8 @@ export class Presenter<V extends View> {
       this.view.displayErrorMessage(
         `Failed to ${operationDescription} because of exception: ${error}`
       );
+    } finally {
+      this.isLoading = false;
     }
   }
 }
