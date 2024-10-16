@@ -1,7 +1,6 @@
-import { User, AuthToken } from "tweeter-shared";
-import { UserService } from "../model/service/UserService";
 import { Buffer } from "buffer";
 import { ChangeEvent } from "react";
+import { LoginPresenter, LoginView } from "./LoginPresenter";
 
 export interface RegisterProfile {
   firstName: string;
@@ -12,28 +11,16 @@ export interface RegisterProfile {
   imageFileExtension: string;
 }
 
-export interface RegisterView {
-  updateUserInfo: (
-    currentUser: User,
-    displayedUser: User,
-    authToken: AuthToken,
-    rememberMe: boolean
-  ) => void;
-  navigate: (path: string) => void;
-  displayErrorMessage: (message: string) => void;
+export interface RegisterView extends LoginView {
   setImageBytes: (bytes: Uint8Array) => void;
 }
 
-export class RegisterPresenter {
-  public isLoading = false;
-  private service: UserService;
-  private view: RegisterView;
+export class RegisterPresenter extends LoginPresenter<RegisterView> {
   public imageUrl: string = "";
   public imageFileExtension: string = "";
 
   public constructor(view: RegisterView) {
-    this.service = new UserService();
-    this.view = view;
+    super(view);
   }
 
   handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -78,7 +65,7 @@ export class RegisterPresenter {
   };
 
   async doRegister(userProfile: RegisterProfile, rememberMe: boolean) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.isLoading = true;
 
       const [user, authToken] = await this.service.register(
@@ -92,12 +79,6 @@ export class RegisterPresenter {
 
       this.view.updateUserInfo(user, user, authToken, rememberMe);
       this.view.navigate("/");
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to register user because of exception: ${error}`
-      );
-    } finally {
-      this.isLoading = false;
-    }
+    }, "register user");
   }
 }

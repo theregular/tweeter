@@ -46,7 +46,7 @@ export abstract class PagedItemPresenter<T, U> extends Presenter<
     this.hasMoreItems = true;
   }
   async loadMoreItems(authToken: AuthToken, userAlias: string) {
-    this.doFailureReportingOperation(async () => {
+    await this.doFailureReportingOperation(async () => {
       if (this.hasMoreItems) {
         let [newItems, hasMore] = await this.getMoreItems(authToken, userAlias);
 
@@ -57,10 +57,19 @@ export abstract class PagedItemPresenter<T, U> extends Presenter<
     }, this.getItemDescription());
   }
 
-  protected abstract getMoreItems(
+  protected async getMoreItems(
     authToken: AuthToken,
     userAlias: string
-  ): Promise<[T[], boolean]>;
+  ): Promise<[T[], boolean]> {
+    return await this.operation(authToken, userAlias, PAGE_SIZE, this.lastItem);
+  }
 
   protected abstract getItemDescription(): string;
+
+  protected abstract get operation(): (
+    authToken: AuthToken,
+    userAlias: string,
+    pageSize: number,
+    lastItem: T | null
+  ) => Promise<[T[], boolean]>;
 }

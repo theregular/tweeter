@@ -10,7 +10,7 @@ import { LoginPresenter, LoginView } from "../../../presenter/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
-  presenterGenerator: (view: LoginView) => LoginPresenter;
+  presenterGenerator: (view: LoginView) => LoginPresenter<LoginView>;
 }
 
 const Login = (props: Props) => {

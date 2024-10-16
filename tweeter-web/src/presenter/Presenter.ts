@@ -4,10 +4,18 @@ export interface View {
 
 export class Presenter<V extends View> {
   private _view: V;
-  public isLoading = false;
+  private _isLoading = false;
 
   protected constructor(view: V) {
     this._view = view;
+  }
+
+  public get isLoading() {
+    return this._isLoading;
+  }
+
+  public set isLoading(value: boolean) {
+    this._isLoading = value;
   }
 
   protected get view(): V {
@@ -16,7 +24,8 @@ export class Presenter<V extends View> {
 
   async doFailureReportingOperation(
     operation: () => Promise<void>,
-    operationDescription: string
+    operationDescription: string,
+    finallyOperation?: () => void
   ) {
     try {
       await operation();
@@ -26,6 +35,7 @@ export class Presenter<V extends View> {
       );
     } finally {
       this.isLoading = false;
+      finallyOperation;
     }
   }
 }
