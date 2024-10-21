@@ -6,6 +6,7 @@ export class FollowerPresenter extends UserItemPresenter {
   protected get operation() {
     return this.service.loadMoreFollowers;
   }
+
   protected getItemDescription(): string {
     return "load followers";
   }

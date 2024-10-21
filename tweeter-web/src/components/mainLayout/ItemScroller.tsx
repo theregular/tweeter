@@ -1,22 +1,21 @@
 import InfiniteScroll from "react-infinite-scroll-component";
-import StatusItem from "../statusItem/StatusItem";
-import { Status } from "tweeter-shared";
 import { useEffect, useState } from "react";
 import useToastListener from "../toaster/ToastListenerHook";
 import useUserInfoListener from "../userInfo/UserInfoListenerHook";
 import {
-  StatusItemPresenter,
-  StatusItemView,
-} from "../../presenter/StatusItemPresenter";
+  PagedItemPresenter,
+  PagedItemView,
+} from "../../presenter/PagedItemPresenter";
 
-interface Props {
-  presenterGenerator: (view: StatusItemView) => StatusItemPresenter;
+interface Props<T, U> {
+  presenterGenerator: (view: PagedItemView<T>) => PagedItemPresenter<T, U>;
+  itemComponentGenerator: (value: T) => JSX.Element;
 }
 
-const StatusItemScroller = (props: Props) => {
+const ItemScroller = <T, U>(props: Props<T, U>) => {
   const { displayErrorMessage } = useToastListener();
-  const [items, setItems] = useState<Status[]>([]);
-  const [newItems, setNewItems] = useState<Status[]>([]);
+  const [items, setItems] = useState<T[]>([]);
+  const [newItems, setNewItems] = useState<T[]>([]);
   const [changedDisplayedUser, setChangedDisplayedUser] = useState(true);
 
   const { displayedUser, authToken } = useUserInfoListener();
@@ -49,8 +48,8 @@ const StatusItemScroller = (props: Props) => {
     presenter.reset();
   };
 
-  const listener: StatusItemView = {
-    addItems: (newItems: Status[]) => setNewItems(newItems),
+  const listener: PagedItemView<T> = {
+    addItems: (newItems: T[]) => setNewItems(newItems),
     displayErrorMessage: displayErrorMessage,
   };
 
@@ -75,7 +74,7 @@ const StatusItemScroller = (props: Props) => {
             key={index}
             className="row mb-3 mx-0 px-0 border rounded bg-white"
           >
-            <StatusItem value={item} />
+            {props.itemComponentGenerator(item)}
           </div>
         ))}
       </InfiniteScroll>
@@ -83,4 +82,4 @@ const StatusItemScroller = (props: Props) => {
   );
 };
 
-export default StatusItemScroller;
+export default ItemScroller;

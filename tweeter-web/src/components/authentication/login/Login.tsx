@@ -10,14 +10,12 @@ import { LoginPresenter, LoginView } from "../../../presenter/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
-  presenterGenerator: (view: LoginView) => LoginPresenter<LoginView>;
 }
 
 const Login = (props: Props) => {
   const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -31,7 +29,7 @@ const Login = (props: Props) => {
     updateUserInfo: updateUserInfo,
   };
 
-  const [presenter] = useState(props.presenterGenerator(listener));
+  const [presenter] = useState(new LoginPresenter(listener));
 
   const checkSubmitButtonStatus = (): boolean => {
     return !alias || !password;
@@ -72,7 +70,7 @@ const Login = (props: Props) => {
       switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
       setRememberMe={setRememberMe}
       submitButtonDisabled={checkSubmitButtonStatus}
-      isLoading={isLoading}
+      isLoading={presenter.isLoading}
       submit={() =>
         presenter.doLogin(alias, password, props.originalUrl, rememberMe)
       }

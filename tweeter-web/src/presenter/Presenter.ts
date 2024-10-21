@@ -35,7 +35,9 @@ export class Presenter<V extends View> {
       );
     } finally {
       this.isLoading = false;
-      finallyOperation;
+      if (!!finallyOperation) {
+        finallyOperation();
+      }
     }
   }
 }

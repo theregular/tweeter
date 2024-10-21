@@ -8,11 +8,11 @@ import {
   UserInfoView,
 } from "../../presenter/UserInfoPresenter";
 
-interface Props {
-  presenterGenerator: (view: UserInfoView) => UserInfoPresenter;
-}
+// interface Props {
+//   presenterGenerator: (view: UserInfoView) => UserInfoPresenter;
+// }
 
-const UserInfo = (props: Props) => {
+const UserInfo = () => {
   const { displayErrorMessage, displayInfoMessage, clearLastInfoMessage } =
     useToastListener();
 
@@ -35,7 +35,7 @@ const UserInfo = (props: Props) => {
     clearLastInfoMessage: clearLastInfoMessage,
   };
 
-  const [presenter] = useState(props.presenterGenerator(listener));
+  const [presenter] = useState(new UserInfoPresenter(listener));
 
   const switchToLoggedInUser = (event: React.MouseEvent): void => {
     event.preventDefault();

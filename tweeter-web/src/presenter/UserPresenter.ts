@@ -26,7 +26,7 @@ export abstract class UserPresenter<V extends UserView> extends Presenter<V> {
     originalUrl: string | undefined,
     rememberMe: boolean
   ) {
-    this.doFailureReportingOperation(async () => {
+    await this.doFailureReportingOperation(async () => {
       this.isLoading = true;
 
       const [user, authToken] = await this.service.login(alias, password);

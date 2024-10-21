@@ -10,11 +10,11 @@ import {
 } from "../../presenter/AppNavbarPresenter";
 import { useState } from "react";
 
-interface Props {
-  presenterGenerator: (view: AppNavbarView) => AppNavbarPresenter;
-}
+// interface Props {
+//   presenterGenerator: (view: AppNavbarView) => AppNavbarPresenter;
+// }
 
-const AppNavbar = (props: Props) => {
+const AppNavbar = () => {
   const location = useLocation();
   const { authToken, clearUserInfo } = useUserInfo();
   const { displayInfoMessage, displayErrorMessage, clearLastInfoMessage } =
@@ -26,7 +26,7 @@ const AppNavbar = (props: Props) => {
     clearLastInfoMessage,
     clearUserInfo,
   };
-  const [presenter] = useState(props.presenterGenerator(listener));
+  const [presenter] = useState(new AppNavbarPresenter(listener));
 
   return (
     <Navbar

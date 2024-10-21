@@ -1,9 +1,8 @@
 import { AuthToken, User } from "tweeter-shared";
 import { UserService } from "../model/service/UserService";
-import { Presenter } from "./Presenter";
+import { Presenter, View } from "./Presenter";
 
-export interface UserInfoView {
-  displayErrorMessage: (message: string) => void;
+export interface UserInfoView extends View {
   displayInfoMessage: (message: string, duration: number) => void;
   clearLastInfoMessage: () => void;
 }
@@ -61,10 +60,14 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
     event: React.MouseEvent
   ): Promise<void> {
     event.preventDefault();
+
     await this.doFailureReportingOperation(
       async () => {
         this.isLoading = true;
-        this.view.displayInfoMessage(`Following ${displayedUser!.name}...`, 0);
+        await this.view.displayInfoMessage(
+          `Following ${displayedUser!.name}...`,
+          0
+        );
 
         const [followerCount, followeeCount] = await this.follow(
           authToken!,

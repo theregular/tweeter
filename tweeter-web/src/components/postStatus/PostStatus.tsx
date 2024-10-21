@@ -8,11 +8,11 @@ import {
   PostStatusView,
 } from "../../presenter/PostStatusPresenter";
 
-interface Props {
-  presenterGenerator: (view: PostStatusView) => PostStatusPresenter;
-}
+// interface Props {
+//   presenterGenerator: (view: PostStatusView) => PostStatusPresenter;
+// }
 
-const PostStatus = (props: Props) => {
+const PostStatus = () => {
   const { displayErrorMessage, displayInfoMessage, clearLastInfoMessage } =
     useToastListener();
 
@@ -26,7 +26,7 @@ const PostStatus = (props: Props) => {
     clearLastInfoMessage: clearLastInfoMessage,
   };
 
-  const [presenter] = useState(props.presenterGenerator(listener));
+  const [presenter] = useState(new PostStatusPresenter(listener));
 
   const checkButtonStatus: () => boolean = () => {
     return !post.trim() || !authToken || !currentUser;
