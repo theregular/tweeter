@@ -4,7 +4,7 @@ export interface View {
 
 export class Presenter<V extends View> {
   private _view: V;
-  private _isLoading = false;
+  public _isLoading = false;
 
   protected constructor(view: V) {
     this._view = view;
@@ -31,10 +31,12 @@ export class Presenter<V extends View> {
       await operation();
     } catch (error) {
       this.view.displayErrorMessage(
-        `Failed to ${operationDescription} because of exception: ${error}`
+        `Failed to ${operationDescription} because of exception: ${
+          (error as Error).message
+        }`
       );
     } finally {
-      this.isLoading = false;
+      this._isLoading = false;
       if (!!finallyOperation) {
         finallyOperation();
       }
