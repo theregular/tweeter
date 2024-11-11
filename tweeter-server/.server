@@ -8,7 +8,6 @@ tweeterGetStoryItems | lambda/status/GetStoryItemsLambda.handler
 tweeterLogin | lambda/auth/LoginLambda.handler
 tweeterLogout | lambda/auth/LogoutLambda.handler
 tweeterRegister | lambda/auth/RegisterLambda.handler
-tweeterPostStatus | lambda/status/PostStatusLambdaLambda.handler
 tweeterFollow | lambda/follow/FollowLambda.handler
 tweeterUnfollow | lambda/follow/UnfollowLambda.handler
 tweeterGetFollowerCount | lambda/follow/GetFollowerCountLambda.handler
@@ -18,4 +17,4 @@ tweeterGetUser | lambda/user/GetUserLambda.handler
 tweeterPostStatus | lambda/status/PostStatusLambda.handler
 
 '
-LAMBDALAYER_ARN='arn:aws:lambda:us-west-2:615299743391:layer:340-tweeter-lambda:5'
+LAMBDALAYER_ARN='arn:aws:lambda:us-west-2:615299743391:layer:340-tweeter-lambda:6'

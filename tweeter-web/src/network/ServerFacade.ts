@@ -73,7 +73,6 @@ export class ServerFacade {
   }
 
   public async login(request: LoginRequest): Promise<[User, AuthToken]> {
-    console.log("LOGIN ON SERVER");
     return await this.makeGetRequestAndError<
       LoginRequest,
       LoginResponse,
@@ -102,7 +101,7 @@ export class ServerFacade {
   }
 
   public async logout(request: LogoutRequest): Promise<void> {
-    await this.makeSimpleRequestAndError(request, "/logout");
+    await this.makeSimpleRequestAndError(request, "/auth/logout");
   }
 
   public async register(request: RegisterRequest): Promise<[User, AuthToken]> {
@@ -113,7 +112,7 @@ export class ServerFacade {
       [User, AuthToken]
     >(
       request,
-      "/register",
+      "/auth/register",
       (response: RegisterResponse) => {
         const userDto = response.user;
         const user: User | null = userDto
@@ -146,7 +145,7 @@ export class ServerFacade {
       boolean
     >(
       request,
-      "/is-follower",
+      "/user/isfollowerstatus",
       (response: GetIsFollowerStatusResponse) => {
         return response.status;
       },
@@ -167,7 +166,7 @@ export class ServerFacade {
       number
     >(
       request,
-      "/follower-count",
+      "/follower/count",
       (response: GetFollowCountResponse) => {
         return response.count;
       },
@@ -188,7 +187,7 @@ export class ServerFacade {
       number
     >(
       request,
-      "/followee-count",
+      "/followee/count",
       (response: GetFollowCountResponse) => {
         return response.count;
       },
@@ -207,7 +206,7 @@ export class ServerFacade {
       User
     >(
       request,
-      "/user",
+      "/user/getuser",
       (response: GetUserResponse) => {
         const userDto = response.user;
         const user: User | null = userDto
@@ -237,7 +236,7 @@ export class ServerFacade {
       [User[], boolean]
     >(
       request,
-      "/followers",
+      "/follower/list",
       (response: PagedItemResponse<UserDto>) => {
         return response.success && response.items
           ? response.items.map((dto) => User.fromDto(dto) as User)
@@ -260,7 +259,7 @@ export class ServerFacade {
       [User[], boolean]
     >(
       request,
-      "/followees",
+      "/followee/list",
       (response: PagedItemResponse<UserDto>) => {
         return response.success && response.items
           ? response.items.map((dto) => User.fromDto(dto) as User)
@@ -281,7 +280,7 @@ export class ServerFacade {
       [number, number]
     >(
       request,
-      "/follow",
+      "/user/follow",
       (response: FollowResponse) => {
         return [response.followerCount, response.followeeCount];
       },
@@ -300,7 +299,7 @@ export class ServerFacade {
       [number, number]
     >(
       request,
-      "/unfollow",
+      "/user/unfollow",
       (response: FollowResponse) => {
         return [response.followerCount, response.followeeCount];
       },
@@ -321,7 +320,7 @@ export class ServerFacade {
       [Status[], boolean]
     >(
       request,
-      "/story-items",
+      "/status/story",
       (response: PagedItemResponse<StatusDto>) => {
         return response.success && response.items
           ? response.items.map((dto) => Status.fromDto(dto) as Status)
@@ -344,7 +343,7 @@ export class ServerFacade {
       [Status[], boolean]
     >(
       request,
-      "/feed-items",
+      "/status/feed",
       (response: PagedItemResponse<StatusDto>) => {
         return response.success && response.items
           ? response.items.map((dto) => Status.fromDto(dto) as Status)
