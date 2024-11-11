@@ -1,13 +1,16 @@
 import { FollowRequest, FollowResponse } from "tweeter-shared/src";
 import { UserService } from "../../model/service/UserService";
-import { followStructure } from "./FollowStructure";
-import { UserDto } from "tweeter-shared";
 
 export const handler = async (
   request: FollowRequest
 ): Promise<FollowResponse> => {
   const service = new UserService();
-  return await followStructure(request, (token: string, user: UserDto) =>
-    service.follow(token, user)
-  );
+  const { token, user } = request;
+  const [followerCount, followeeCount] = await service.follow(token, user);
+  return {
+    success: true,
+    message: null,
+    followerCount,
+    followeeCount,
+  };
 };

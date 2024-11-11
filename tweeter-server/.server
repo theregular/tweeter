@@ -5,9 +5,17 @@ tweeterGetFollowees | lambda/follow/GetFolloweesLambda.handler
 tweeterGetFollowers | lambda/follow/GetFollowersLambda.handler
 tweeterGetFeedItems | lambda/status/GetFeedItemsLambda.handler
 tweeterGetStoryItems | lambda/status/GetStoryItemsLambda.handler
-tweeterLogin | dist/lambda/auth/Login.handler
-tweeterLogout | dist/lambda/auth/Logout.handler
-tweeterRegister | dist/lambda/auth/Register.handler
+tweeterLogin | lambda/auth/LoginLambda.handler
+tweeterLogout | lambda/auth/LogoutLambda.handler
+tweeterRegister | lambda/auth/RegisterLambda.handler
+tweeterPostStatus | lambda/status/PostStatusLambdaLambda.handler
+tweeterFollow | lambda/follow/FollowLambda.handler
+tweeterUnfollow | lambda/follow/UnfollowLambda.handler
+tweeterGetFollowerCount | lambda/follow/GetFollowerCountLambda.handler
+tweeterGetFolloweeCount | lambda/follow/GetFolloweeCountLambda.handler
+tweeterGetIsFollowerStatus | lambda/follow/GetIsFollowerStatusLambda.handler
+tweeterGetUser | lambda/user/GetUserLambda.handler
+tweeterPostStatus | lambda/status/PostStatusLambda.handler
 
 '
-LAMBDALAYER_ARN='arn:aws:lambda:us-west-2:615299743391:layer:340-tweeter-lambda:4'
+LAMBDALAYER_ARN='arn:aws:lambda:us-west-2:615299743391:layer:340-tweeter-lambda:5'

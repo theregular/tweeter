@@ -1,10 +1,10 @@
 import { Buffer } from "buffer";
-import { AuthToken, User, FakeData, UserDto } from "tweeter-shared";
+import { AuthToken, FakeData, UserDto } from "tweeter-shared";
 import { AuthTokenDto } from "tweeter-shared/src";
 
 export class UserService {
   async getIsFollowerStatus(
-    token: string,
+    authToken: AuthTokenDto,
     user: UserDto,
     selectedUser: UserDto
   ): Promise<boolean> {
@@ -12,12 +12,12 @@ export class UserService {
     return FakeData.instance.isFollower();
   }
 
-  async getFollowerCount(token: string, user: User): Promise<number> {
+  async getFollowerCount(token: string, user: UserDto): Promise<number> {
     // TODO: Replace with the result of calling server
     return FakeData.instance.getFollowerCount(user.alias);
   }
 
-  async getFolloweeCount(token: string, user: User): Promise<number> {
+  async getFolloweeCount(token: string, user: UserDto): Promise<number> {
     // TODO: Replace with the result of calling server
     return FakeData.instance.getFolloweeCount(user.alias);
   }
@@ -45,7 +45,7 @@ export class UserService {
     password: string,
     userImageBytes: Uint8Array,
     imageFileExtension: string
-  ): Promise<[User, AuthToken]> {
+  ): Promise<[UserDto, AuthToken]> {
     // Not neded now, but will be needed when you make the request to the server in milestone 3
     const imageStringBase64: string =
       Buffer.from(userImageBytes).toString("base64");
@@ -60,12 +60,15 @@ export class UserService {
     return [user, FakeData.instance.authToken];
   }
 
-  async getUser(token: string, alias: string): Promise<User | null> {
+  async getUser(
+    authToken: AuthTokenDto,
+    alias: string
+  ): Promise<UserDto | null> {
     // TODO: Replace with the result of calling server
     return FakeData.instance.findUserByAlias(alias);
   }
 
-  public async follow(
+  async follow(
     token: string,
     userToFollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
@@ -80,7 +83,7 @@ export class UserService {
     return [followerCount, followeeCount];
   }
 
-  public async unfollow(
+  async unfollow(
     token: string,
     userToUnfollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
