@@ -23,7 +23,8 @@ export type { AuthTokenDto } from "./model/dto/AuthTokenDto";
 // Requests
 //
 
-export type { PagedItemRequest as PagedUserItemRequest } from "./model/net/request/PagedItemRequest";
+export type { TweeterRequest } from "./model/net/request/TweeterRequest";
+export type { PagedItemRequest } from "./model/net/request/PagedItemRequest";
 export type { LoginRequest } from "./model/net/request/LoginRequest";
 export type { LogoutRequest } from "./model/net/request/LogoutRequest";
 export type { RegisterRequest } from "./model/net/request/RegisterRequest";
