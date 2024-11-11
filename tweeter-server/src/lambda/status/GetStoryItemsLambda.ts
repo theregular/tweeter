@@ -8,7 +8,7 @@ export const handler = async (
 ): Promise<PagedItemResponse<StatusDto>> => {
   const statusService = new StatusService();
   const [items, hasMore] = await statusService.loadMoreStoryItems(
-    request.token,
+    request.authToken,
     request.userAlias,
     request.pageSize,
     request.lastItem

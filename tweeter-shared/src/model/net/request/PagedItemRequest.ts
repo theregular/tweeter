@@ -1,7 +1,8 @@
+import { AuthTokenDto } from "../../dto/AuthTokenDto";
 import { TweeterRequest } from "./TweeterRequest";
 
 export interface PagedItemRequest<D> extends TweeterRequest {
-  readonly token: string;
+  readonly authToken: AuthTokenDto;
   readonly userAlias: string;
   readonly pageSize: number;
   readonly lastItem: D | null;

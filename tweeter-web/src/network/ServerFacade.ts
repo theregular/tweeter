@@ -73,6 +73,7 @@ export class ServerFacade {
   }
 
   public async login(request: LoginRequest): Promise<[User, AuthToken]> {
+    console.log("LOGIN ON SERVER");
     return await this.makeGetRequestAndError<
       LoginRequest,
       LoginResponse,
@@ -80,7 +81,7 @@ export class ServerFacade {
       [User, AuthToken]
     >(
       request,
-      "/login",
+      "/auth/login",
       (response: LoginResponse) => {
         const userDto = response.user;
         const user: User | null = userDto
