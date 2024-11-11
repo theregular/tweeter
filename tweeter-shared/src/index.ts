@@ -16,17 +16,20 @@ export { AuthToken } from "./model/domain/AuthToken";
 //
 
 export type { UserDto } from "./model/dto/UserDto";
+export type { StatusDto } from "./model/dto/StatusDto";
 
 //
 // Requests
 //
 
 export type { PagedUserItemRequest } from "./model/net/request/PagedUserItemRequest";
+export type { PostStatusRequest } from "./model/net/request/PostStatusRequest";
 
 //
 // Responses
 //
 
+export type { TweeterResponse } from "./model/net/response/TweeterResponse";
 export type { PagedUserItemResponse } from "./model/net/response/PagedUserItemResponse";
 
 //

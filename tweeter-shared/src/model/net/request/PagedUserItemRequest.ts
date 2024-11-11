@@ -1,8 +1,6 @@
-import { UserDto } from "../../dto/UserDto";
-
-export interface PagedUserItemRequest {
+export interface PagedUserItemRequest<D> {
   readonly token: string;
   readonly userAlias: string;
   readonly pageSize: number;
-  readonly lastItem: UserDto | null;
+  readonly lastItem: D | null;
 }
