@@ -10,4 +10,4 @@ tweeterLogout | dist/lambda/auth/Logout.handler
 tweeterRegister | dist/lambda/auth/Register.handler
 
 '
-LAMBDALAYER_ARN='arn:aws:lambda:us-west-2:615299743391:layer:340-tweeter-lambda:3'
+LAMBDALAYER_ARN='arn:aws:lambda:us-west-2:615299743391:layer:340-tweeter-lambda:4'
