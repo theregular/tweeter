@@ -276,16 +276,27 @@ export class Status {
     return JSON.stringify(this);
   }
 
-  public get dto(): StatusDto {
+  public get dto() {
     return {
       post: this.post,
-      user: this.user,
+      user: this.user.dto,
       timestamp: this.timestamp,
-      segments: this.segments,
+      segments: this.segments.map((seg) => seg.dto),
     };
   }
 
-  public static fromDto(dto: StatusDto | null): Status | null {
-    return dto == null ? null : new Status(dto.post, dto.user, dto.timestamp);
+  public static fromDto(status: StatusDto | null): Status | null {
+    return status && status.user
+      ? new Status(
+          status.post,
+          new User(
+            status.user.firstName,
+            status.user.lastName,
+            status.user.alias,
+            status.user.imageUrl
+          ),
+          status.timestamp
+        )
+      : null;
   }
 }

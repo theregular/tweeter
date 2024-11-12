@@ -5,11 +5,11 @@ import "isomorphic-fetch";
 describe("StatusService", () => {
   const statusService = new StatusService();
 
-  it("can get a users story items", async () => {
-    const authToken = new AuthToken("abcdefg", 3);
+  it("get a users story items", async () => {
+    const authToken = new AuthToken("asdf", Date.now());
     const [statuses, hasMore] = await statusService.loadMoreStoryItems(
       authToken,
-      "@me",
+      "@test",
       10,
       null
     );

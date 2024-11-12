@@ -1,5 +1,5 @@
 import "./UserInfo.css";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useToastListener from "../toaster/ToastListenerHook";
 import useUserInfo from "./UserInfoHook";
@@ -7,6 +7,7 @@ import {
   UserInfoPresenter,
   UserInfoView,
 } from "../../presenter/UserInfoPresenter";
+import { UserInfoContext } from "./UserInfoProvider";
 
 // interface Props {
 //   presenterGenerator: (view: UserInfoView) => UserInfoPresenter;
@@ -19,15 +20,12 @@ const UserInfo = () => {
   const { currentUser, authToken, displayedUser, setDisplayedUser } =
     useUserInfo();
 
+  // const { currentUser, authToken, displayedUser, setDisplayedUser } =
+  //   useContext(UserInfoContext);
+
   if (!displayedUser) {
     setDisplayedUser(currentUser!);
   }
-
-  useEffect(() => {
-    presenter.setIsFollowerStatus(authToken!, currentUser!, displayedUser!);
-    presenter.setNumbFollowees(authToken!, displayedUser!);
-    presenter.setNumbFollowers(authToken!, displayedUser!);
-  }, [displayedUser]);
 
   const listener: UserInfoView = {
     displayErrorMessage: displayErrorMessage,
@@ -36,6 +34,12 @@ const UserInfo = () => {
   };
 
   const [presenter] = useState(new UserInfoPresenter(listener));
+
+  useEffect(() => {
+    presenter.setIsFollowerStatus(authToken!, currentUser!, displayedUser!);
+    presenter.setNumbFollowees(authToken!, displayedUser!);
+    presenter.setNumbFollowers(authToken!, displayedUser!);
+  }, [displayedUser]);
 
   const switchToLoggedInUser = (event: React.MouseEvent): void => {
     event.preventDefault();

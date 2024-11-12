@@ -20,10 +20,11 @@ export class UserNavigationPresenter extends Presenter<UserNavigationView> {
     event: React.MouseEvent
   ): Promise<void> {
     event.preventDefault();
-    await this.doFailureReportingOperation(async () => {
+    this.doFailureReportingOperation(async () => {
       const alias = this.extractAlias(event.target.toString());
 
       const user = await this.service.getUser(authToken!, alias);
+      console.log("User from presenter layer", user);
 
       if (!!user) {
         if (currentUser!.equals(user)) {

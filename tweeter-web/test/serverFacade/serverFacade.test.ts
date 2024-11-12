@@ -16,15 +16,14 @@ describe("serverFacade", () => {
     serverFacade = new ServerFacade();
   });
 
-  it("can register new user", async () => {
+  it("register a new user", async () => {
     const registerRequest: RegisterRequest = {
-      firstName: "me",
-      lastName: "me",
-      alias: "me",
-      password: "pass",
-      // userImageBytes: "asdsa",
-      userImageBytes: new Uint8Array(0),
-      imageFileExtension: "jpg",
+      firstName: "Test",
+      lastName: "Testerson",
+      alias: "@test",
+      password: "password",
+      userImageBytes: "bytes",
+      imageFileExtension: "png",
     };
     const [newUser, authToken] = await serverFacade.register(registerRequest);
     expect(newUser).not.toBeNull();
@@ -32,9 +31,9 @@ describe("serverFacade", () => {
     expect(authToken).not.toBeNull();
   });
 
-  it("can get followers", async () => {
+  it("get followers", async () => {
     const getFollowersRequest: PagedItemRequest<UserDto> = {
-      authToken: { token: "abcdefg", timestamp: Date.now() },
+      authToken: { token: "asdf", timestamp: Date.now() },
       userAlias: defaultRegisterAlias,
       pageSize: 10,
       lastItem: null,
@@ -46,14 +45,14 @@ describe("serverFacade", () => {
     expect(users.length).toBeGreaterThan(0);
   });
 
-  it("can get followers count", async () => {
+  it("get followers count", async () => {
     const followersCountRequest: GetFollowCountRequest = {
-      token: "abcdefg",
+      token: "asdf",
       user: {
-        firstName: "me",
-        lastName: "me",
-        alias: "@me",
-        imageUrl: "google.com",
+        firstName: "test",
+        lastName: "testerson",
+        alias: "@test",
+        imageUrl: "example.com/image.png",
       },
     };
     const count = await serverFacade.getFollowerCount(followersCountRequest);

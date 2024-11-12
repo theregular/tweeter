@@ -34,7 +34,7 @@ export class ServerFacade {
     this.communicator = new ClientCommunicator(this.SERVER_URL);
   }
 
-  private async makeGetRequestAndError<
+  private async makeRequest<
     T extends TweeterRequest,
     U extends TweeterResponse,
     V,
@@ -63,7 +63,7 @@ export class ServerFacade {
     }
   }
 
-  private async makeSimpleRequestAndError<
+  private async makeSimpleRequest<
     T extends TweeterRequest,
     U extends TweeterResponse
   >(request: T, endpoint: string): Promise<void> {
@@ -74,10 +74,8 @@ export class ServerFacade {
     }
   }
 
-  //LOGIN - ✅
-
   public async login(request: LoginRequest): Promise<[User, AuthToken]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       LoginRequest,
       LoginResponse,
       User,
@@ -87,14 +85,7 @@ export class ServerFacade {
       "/auth/login",
       (response: LoginResponse) => {
         const userDto = response.user;
-        const user: User | null = userDto
-          ? new User(
-              userDto.firstName,
-              userDto.lastName,
-              userDto.alias,
-              userDto.imageUrl
-            )
-          : null;
+        const user: User | null = userDto ? User.fromDto(userDto) : null;
         return user;
       },
       (response: LoginResponse, items: User) => {
@@ -104,14 +95,12 @@ export class ServerFacade {
     );
   }
 
-  //LOGOUT - ✅
-
   public async logout(request: LogoutRequest): Promise<void> {
-    await this.makeSimpleRequestAndError(request, "/auth/logout");
+    await this.makeSimpleRequest(request, "/auth/logout");
   }
 
   public async register(request: RegisterRequest): Promise<[User, AuthToken]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       RegisterRequest,
       RegisterResponse,
       User,
@@ -144,7 +133,7 @@ export class ServerFacade {
   public async getIsFollowerStatus(
     request: GetIsFollowerStatusRequest
   ): Promise<boolean> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       GetIsFollowerStatusRequest,
       GetIsFollowerStatusResponse,
       boolean,
@@ -165,7 +154,7 @@ export class ServerFacade {
   public async getFollowerCount(
     request: GetFollowCountRequest
   ): Promise<number> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       GetFollowCountRequest,
       GetFollowCountResponse,
       number,
@@ -186,7 +175,7 @@ export class ServerFacade {
   public async getFolloweeCount(
     request: GetFollowCountRequest
   ): Promise<number> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       GetFollowCountRequest,
       GetFollowCountResponse,
       number,
@@ -205,16 +194,21 @@ export class ServerFacade {
   }
 
   public async getUser(request: GetUserRequest): Promise<User> {
-    return await this.makeGetRequestAndError<
-      GetUserRequest,
-      GetUserResponse,
-      User,
-      User
-    >(
+    return await this.makeRequest<GetUserRequest, GetUserResponse, User, User>(
       request,
       "/user/getuser",
       (response: GetUserResponse) => {
+        // console.log("Response from server:", response);
         const userDto = response.user;
+        console.log("DTO from server:", userDto);
+        // console.log("DTO is null?", userDto == null);
+        console.log(
+          "DTO from server:",
+          response.user?.alias,
+          response.user?.firstName,
+          userDto?.lastName,
+          userDto?.imageUrl
+        );
         const user: User | null = userDto
           ? new User(
               userDto.firstName,
@@ -223,6 +217,8 @@ export class ServerFacade {
               userDto.imageUrl
             )
           : null;
+        // console.log("converted user is null?", user == null);
+        console.log("Converted user:", user);
         return user;
       },
       (response: GetUserResponse, items: User) => {
@@ -235,7 +231,7 @@ export class ServerFacade {
   public async loadMoreFollowers(
     request: PagedItemRequest<UserDto>
   ): Promise<[User[], boolean]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       PagedItemRequest<UserDto>,
       PagedItemResponse<UserDto>,
       User[],
@@ -258,7 +254,7 @@ export class ServerFacade {
   public async loadMoreFollowees(
     request: PagedItemRequest<UserDto>
   ): Promise<[User[], boolean]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       PagedItemRequest<UserDto>,
       PagedItemResponse<UserDto>,
       User[],
@@ -279,7 +275,7 @@ export class ServerFacade {
   }
 
   public async follow(request: FollowRequest): Promise<[number, number]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       FollowRequest,
       FollowResponse,
       [number, number],
@@ -298,7 +294,7 @@ export class ServerFacade {
   }
 
   public async unfollow(request: FollowRequest): Promise<[number, number]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       FollowRequest,
       FollowResponse,
       [number, number],
@@ -319,7 +315,7 @@ export class ServerFacade {
   public async loadMoreStoryItems(
     request: PagedItemRequest<StatusDto>
   ): Promise<[Status[], boolean]> {
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       PagedItemRequest<StatusDto>,
       PagedItemResponse<StatusDto>,
       Status[],
@@ -345,7 +341,7 @@ export class ServerFacade {
     console.log("***LOAD MORE FEED ITEMS IN SERVER FACADE");
     console.log("LOAD MORE FEED request json: ", request);
 
-    return await this.makeGetRequestAndError<
+    return await this.makeRequest<
       PagedItemRequest<StatusDto>,
       PagedItemResponse<StatusDto>,
       Status[],
@@ -366,6 +362,6 @@ export class ServerFacade {
   }
 
   public async postStatus(request: PostStatusRequest): Promise<void> {
-    await this.makeSimpleRequestAndError(request, "/status/post");
+    await this.makeSimpleRequest(request, "/status/post");
   }
 }
