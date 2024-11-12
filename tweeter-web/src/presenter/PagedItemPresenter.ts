@@ -7,19 +7,23 @@ export interface PagedItemView<T> extends View {
   addItems: (newItems: T[]) => void;
 }
 
-export abstract class PagedItemPresenter<T, U> extends Presenter<
-  PagedItemView<T>
-> {
+export abstract class PagedItemPresenter<
+  T,
+  U extends PagedItemView<T>,
+  S
+> extends Presenter<U> {
+  reset() {
+    this._hasMoreItems = true;
+    this._lastItem = null;
+  }
   private _hasMoreItems = true;
   private _lastItem: T | null = null;
-  private _service: U;
+  private _service: S;
 
-  public constructor(view: PagedItemView<T>) {
+  protected constructor(view: U) {
     super(view);
     this._service = this.createService();
   }
-
-  protected abstract createService(): U;
 
   public get hasMoreItems() {
     return this._hasMoreItems;
@@ -41,41 +45,29 @@ export abstract class PagedItemPresenter<T, U> extends Presenter<
     return this._service;
   }
 
-  reset() {
-    this.lastItem = null;
-    this.hasMoreItems = true;
+  protected get view() {
+    return super.view as U;
   }
-  async loadMoreItems(authToken: AuthToken, userAlias: string) {
-    // console.log(
-    //   "***LOAD MORE ITEMS INFO, authToken: ",
-    //   authToken,
-    //   " userAlias: ",
-    //   userAlias
-    // );
-    await this.doFailureReportingOperation(async () => {
-      if (this.hasMoreItems) {
-        let [newItems, hasMore] = await this.getMoreItems(authToken, userAlias);
 
-        this.hasMoreItems = hasMore;
-        this.lastItem = newItems[newItems.length - 1];
-        this.view.addItems(newItems);
-      }
+  public async loadMoreItems(authToken: AuthToken, userAlias: string) {
+    this.doFailureReportingOperation(async () => {
+      const [newItems, hasMore] = await this.loadMoreItemsServiceCall(
+        authToken,
+        userAlias
+      );
+
+      this.hasMoreItems = hasMore;
+      this.lastItem = newItems[newItems.length - 1];
+      this.view.addItems(newItems);
     }, this.getItemDescription());
-  }
-
-  protected async getMoreItems(
-    authToken: AuthToken,
-    userAlias: string
-  ): Promise<[T[], boolean]> {
-    return await this.operation(authToken, userAlias, PAGE_SIZE, this.lastItem);
   }
 
   protected abstract getItemDescription(): string;
 
-  protected abstract get operation(): (
+  protected abstract loadMoreItemsServiceCall(
     authToken: AuthToken,
-    userAlias: string,
-    pageSize: number,
-    lastItem: T | null
-  ) => Promise<[T[], boolean]>;
+    userAlias: string
+  ): Promise<[T[], boolean]>;
+
+  protected abstract createService(): S;
 }

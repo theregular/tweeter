@@ -7,15 +7,17 @@ import {
   PagedItemView,
 } from "../../presenter/PagedItemPresenter";
 
-interface Props<T, U> {
-  presenterGenerator: (view: PagedItemView<T>) => PagedItemPresenter<T, U>;
-  itemComponentGenerator: (value: T) => JSX.Element;
+interface Props<S, U extends PagedItemView<V>, V> {
+  presenterGenerator: (view: PagedItemView<V>) => PagedItemPresenter<V, U, S>;
+  itemComponentGenerator: (value: V) => JSX.Element;
 }
 
-const ItemScroller = <T, U>(props: Props<T, U>) => {
+const ItemScroller = <S, U extends PagedItemView<V>, V>(
+  props: Props<S, U, V>
+) => {
   const { displayErrorMessage } = useToastListener();
-  const [items, setItems] = useState<T[]>([]);
-  const [newItems, setNewItems] = useState<T[]>([]);
+  const [items, setItems] = useState<V[]>([]);
+  const [newItems, setNewItems] = useState<V[]>([]);
   const [changedDisplayedUser, setChangedDisplayedUser] = useState(true);
 
   const { displayedUser, authToken } = useUserInfoListener();
@@ -39,8 +41,8 @@ const ItemScroller = <T, U>(props: Props<T, U>) => {
     }
   }, [newItems]);
 
-  const listener: PagedItemView<T> = {
-    addItems: (newItems: T[]) => setNewItems(newItems),
+  const listener: PagedItemView<V> = {
+    addItems: (newItems: V[]) => setNewItems(newItems),
     displayErrorMessage: displayErrorMessage,
   };
 
