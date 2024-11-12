@@ -22,7 +22,8 @@ describe("serverFacade", () => {
       lastName: "me",
       alias: "me",
       password: "pass",
-      userImageBytes: new Uint8Array(),
+      // userImageBytes: "asdsa",
+      userImageBytes: new Uint8Array(0),
       imageFileExtension: "jpg",
     };
     const [newUser, authToken] = await serverFacade.register(registerRequest);

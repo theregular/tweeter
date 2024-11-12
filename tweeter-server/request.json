@@ -1,6 +1,8 @@
 {
-  "token": "value1",
-  "userAlias": "value2",
-  "pageSize": 10,
-  "lastItem": null
+  "firstName": "Test",
+  "lastName": "Testerson",
+  "alias": "@bruh",
+  "password": "password",
+  "userImageBytes": [4, 5, 6],
+  "imageFileExtension": "test.png"
 }

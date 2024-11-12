@@ -28,8 +28,10 @@ export class Presenter<V extends View> {
     finallyOperation?: () => void
   ) {
     try {
+      //console.log("****DOING OPERATION: ", operation);
       await operation();
     } catch (error) {
+      //console.log("****ERROR STACK: ", (error as Error).stack);
       this.view.displayErrorMessage(
         `Failed to ${operationDescription} because of exception: ${
           (error as Error).message

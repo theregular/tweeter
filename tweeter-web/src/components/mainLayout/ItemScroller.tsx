@@ -39,21 +39,19 @@ const ItemScroller = <T, U>(props: Props<T, U>) => {
     }
   }, [newItems]);
 
-  const reset = async () => {
-    setItems([]);
-    setNewItems([]);
-
-    setChangedDisplayedUser(true);
-
-    presenter.reset();
-  };
-
   const listener: PagedItemView<T> = {
     addItems: (newItems: T[]) => setNewItems(newItems),
     displayErrorMessage: displayErrorMessage,
   };
 
   const [presenter] = useState(props.presenterGenerator(listener));
+
+  const reset = async () => {
+    setItems([]);
+    setNewItems([]);
+    presenter.reset();
+    setChangedDisplayedUser(true);
+  };
 
   const loadMoreItems = async () => {
     presenter.loadMoreItems(authToken!, displayedUser!.alias);

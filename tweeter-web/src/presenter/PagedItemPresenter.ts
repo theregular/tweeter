@@ -46,6 +46,12 @@ export abstract class PagedItemPresenter<T, U> extends Presenter<
     this.hasMoreItems = true;
   }
   async loadMoreItems(authToken: AuthToken, userAlias: string) {
+    // console.log(
+    //   "***LOAD MORE ITEMS INFO, authToken: ",
+    //   authToken,
+    //   " userAlias: ",
+    //   userAlias
+    // );
     await this.doFailureReportingOperation(async () => {
       if (this.hasMoreItems) {
         let [newItems, hasMore] = await this.getMoreItems(authToken, userAlias);

@@ -37,9 +37,11 @@ export class ClientCommunicator {
       if (resp.ok) {
         // Be careful with the return type here. resp.json() returns Promise<any> which means there is no type checking on response.
         const response: RES = await resp.json();
+        console.log(`RESPONSE BODY: '${JSON.stringify(response)}'`);
         return response;
       } else {
         const error = await resp.json();
+        console.error(`ERRROR BODY: '${JSON.stringify(error)}'`);
         throw new Error(error.errorMessage);
       }
     } catch (error) {

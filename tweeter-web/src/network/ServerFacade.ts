@@ -18,7 +18,6 @@ import {
   RegisterResponse,
   Status,
   StatusDto,
-  StatusRequest,
   TweeterRequest,
   TweeterResponse,
   User,
@@ -51,11 +50,14 @@ export class ServerFacade {
     const items: V | null = getItems(response);
     if (response.success) {
       if (items === null) {
+        // console.error("***ERROR TEST 1");
         throw new Error(errorMessage);
       } else {
+        // console.log("***SUCCESS");
         return getReturnItems(response, items);
       }
     } else {
+      // console.error("***ERROR TEST 2");
       console.error(response);
       throw new Error(response.message ? response.message : undefined);
     }
@@ -71,6 +73,8 @@ export class ServerFacade {
       throw new Error(response.message ? response.message : undefined);
     }
   }
+
+  //LOGIN - ✅
 
   public async login(request: LoginRequest): Promise<[User, AuthToken]> {
     return await this.makeGetRequestAndError<
@@ -99,6 +103,8 @@ export class ServerFacade {
       "Invalid alias or password"
     );
   }
+
+  //LOGOUT - ✅
 
   public async logout(request: LogoutRequest): Promise<void> {
     await this.makeSimpleRequestAndError(request, "/auth/logout");
@@ -334,10 +340,13 @@ export class ServerFacade {
   }
 
   public async loadMoreFeedItems(
-    request: StatusRequest
+    request: PagedItemRequest<StatusDto>
   ): Promise<[Status[], boolean]> {
+    console.log("***LOAD MORE FEED ITEMS IN SERVER FACADE");
+    console.log("LOAD MORE FEED request json: ", request);
+
     return await this.makeGetRequestAndError<
-      StatusRequest,
+      PagedItemRequest<StatusDto>,
       PagedItemResponse<StatusDto>,
       Status[],
       [Status[], boolean]
@@ -357,6 +366,6 @@ export class ServerFacade {
   }
 
   public async postStatus(request: PostStatusRequest): Promise<void> {
-    await this.makeSimpleRequestAndError(request, "/post");
+    await this.makeSimpleRequestAndError(request, "/status/post");
   }
 }

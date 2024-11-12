@@ -32,7 +32,7 @@ export type { GetIsFollowerStatusRequest } from "./model/net/request/GetIsFollow
 export type { GetFollowCountRequest } from "./model/net/request/GetFollowCountRequest";
 export type { GetUserRequest } from "./model/net/request/GetUserRequest";
 export type { FollowRequest } from "./model/net/request/FollowRequest";
-export type { StatusRequest } from "./model/net/request/StatusRequest";
+// export type { StatusRequest } from "./model/net/request/StatusRequest";
 export type { PostStatusRequest } from "./model/net/request/PostStatusRequest";
 
 //
