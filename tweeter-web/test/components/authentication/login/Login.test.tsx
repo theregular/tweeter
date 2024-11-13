@@ -67,7 +67,7 @@ const renderLogin = (
   return render(
     <MemoryRouter>
       {!!presenter ? (
-        <Login originalUrl={originalUrl} presenter={presenter} />
+        <Login originalUrl={originalUrl} />
       ) : (
         <Login originalUrl={originalUrl} />
       )}

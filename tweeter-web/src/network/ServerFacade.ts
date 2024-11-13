@@ -289,7 +289,7 @@ export class ServerFacade {
       (response: FollowResponse, items: [number, number]) => {
         return items;
       },
-      "Invalid response from server"
+      "Could not follow user"
     );
   }
 
@@ -308,7 +308,7 @@ export class ServerFacade {
       (response: FollowResponse, items: [number, number]) => {
         return items;
       },
-      "Invalid response from server"
+      "Could not unfollow user"
     );
   }
 

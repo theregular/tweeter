@@ -94,9 +94,7 @@ describe("PostStatus Component", () => {
 
 const renderPostStatus = (presenter?: PostStatusPresenter) => {
   return render(
-    <MemoryRouter>
-      {!!presenter ? <PostStatus presenter={presenter} /> : <PostStatus />}
-    </MemoryRouter>
+    <MemoryRouter>{!!presenter ? <PostStatus /> : <PostStatus />}</MemoryRouter>
   );
 };
 

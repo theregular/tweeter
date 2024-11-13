@@ -36,7 +36,6 @@ export class RegisterPresenter extends LoginPresenter<RegisterView> {
       reader.onload = (event: ProgressEvent<FileReader>) => {
         const imageStringBase64 = event.target?.result as string;
 
-        // Remove unnecessary file metadata from the start of the string.
         const imageStringBase64BufferContents =
           imageStringBase64.split("base64,")[1];
 
@@ -49,7 +48,6 @@ export class RegisterPresenter extends LoginPresenter<RegisterView> {
       };
       reader.readAsDataURL(file);
 
-      // Set image file extension (and move to a separate method)
       const fileExtension = this.getFileExtension(file);
       if (fileExtension) {
         this.imageFileExtension = fileExtension;
