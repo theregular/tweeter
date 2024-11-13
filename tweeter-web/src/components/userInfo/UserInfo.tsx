@@ -20,9 +20,6 @@ const UserInfo = () => {
   const { currentUser, authToken, displayedUser, setDisplayedUser } =
     useUserInfo();
 
-  // const { currentUser, authToken, displayedUser, setDisplayedUser } =
-  //   useContext(UserInfoContext);
-
   if (!displayedUser) {
     setDisplayedUser(currentUser!);
   }

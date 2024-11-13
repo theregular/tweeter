@@ -29,7 +29,7 @@ export class FollowService {
           }
         : null,
     };
-    console.log("***LOAD MORE FOLLOWERES request: ", request);
+    // console.log("***LOAD MORE FOLLOWERES request: ", request);
     return await this.serverFacade.loadMoreFollowers(request);
   }
 

@@ -73,12 +73,6 @@ export class UserService {
     // TODO: Replace with the result of calling server
     const user: User | null = FakeData.instance.findUserByAlias(alias);
     return user === null ? null : user.dto;
-    // : {
-    //     firstName: user.firstName,
-    //     lastName: user.lastName,
-    //     alias: user.alias,
-    //     imageUrl: user.imageUrl,
-    //   };
   }
 
   async follow(
@@ -86,7 +80,7 @@ export class UserService {
     userToFollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
     // Pause so we can see the follow message. Remove when connected to the server
-    await new Promise((f) => setTimeout(f, 2000));
+    // await new Promise((f) => setTimeout(f, 2000));
 
     // TODO: Call the server
 
@@ -101,7 +95,7 @@ export class UserService {
     userToUnfollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
     // Pause so we can see the unfollow message. Remove when connected to the server
-    await new Promise((f) => setTimeout(f, 2000));
+    // await new Promise((f) => setTimeout(f, 2000));
 
     // TODO: Call the server
 

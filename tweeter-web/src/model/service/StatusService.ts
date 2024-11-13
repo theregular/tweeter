@@ -1,6 +1,5 @@
 import {
   AuthToken,
-  FakeData,
   PagedItemRequest,
   PostStatusRequest,
   Status,
@@ -35,10 +34,6 @@ export class StatusService {
     pageSize: number,
     lastItem: Status | null
   ): Promise<[Status[], boolean]> {
-    // console.log(
-    //   "**LAST ITEM DTO: ",
-    //   lastItem ? lastItem.dto : "LAST ITEM GIVEN AS NULL"
-    // );
     const request: PagedItemRequest<StatusDto> = {
       authToken: {
         token: authToken.token,
@@ -48,8 +43,6 @@ export class StatusService {
       pageSize,
       lastItem: lastItem ? lastItem.dto : null,
     };
-    // console.log("***LOAD MORE FEED request json: ", JSON.stringify(request));
-    // console.log("***LOAD MORE FEED before serverFacade call");
     return await this.serverFacade.loadMoreFeedItems(request);
   }
 

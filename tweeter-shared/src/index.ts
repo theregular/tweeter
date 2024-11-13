@@ -18,6 +18,7 @@ export { AuthToken } from "./model/domain/AuthToken";
 export type { UserDto } from "./model/dto/UserDto";
 export type { StatusDto } from "./model/dto/StatusDto";
 export type { AuthTokenDto } from "./model/dto/AuthTokenDto";
+export type { PostSegmentDto } from "./model/dto/PostSegmentDto";
 
 //
 // Requests
@@ -32,7 +33,6 @@ export type { GetIsFollowerStatusRequest } from "./model/net/request/GetIsFollow
 export type { GetFollowCountRequest } from "./model/net/request/GetFollowCountRequest";
 export type { GetUserRequest } from "./model/net/request/GetUserRequest";
 export type { FollowRequest } from "./model/net/request/FollowRequest";
-// export type { StatusRequest } from "./model/net/request/StatusRequest";
 export type { PostStatusRequest } from "./model/net/request/PostStatusRequest";
 
 //
@@ -44,8 +44,8 @@ export type { PagedItemResponse } from "./model/net/response/PagedItemResponse";
 export type { LoginResponse } from "./model/net/response/LoginResponse";
 export type { LogoutResponse } from "./model/net/response/LogoutResponse";
 export type { RegisterResponse } from "./model/net/response/RegisterResponse";
-export type { GetFollowCountResponse } from "./model/net/response/GetFollowCountResponse";
 export type { GetIsFollowerStatusResponse } from "./model/net/response/GetIsFollowerStatusResponse";
+export type { GetFollowCountResponse } from "./model/net/response/GetFollowCountResponse";
 export type { GetUserResponse } from "./model/net/response/GetUserResponse";
 export type { FollowResponse } from "./model/net/response/FollowResponse";
 

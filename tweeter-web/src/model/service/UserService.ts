@@ -2,7 +2,6 @@ import { Buffer } from "buffer";
 import {
   AuthToken,
   User,
-  FakeData,
   LoginRequest,
   LogoutRequest,
   RegisterRequest,
