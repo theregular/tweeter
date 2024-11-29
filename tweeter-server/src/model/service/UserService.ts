@@ -74,19 +74,19 @@ export class UserService {
     // const imageStringBase64: string =
     //   Buffer.from(userImageBytes).toString("base64");
 
-    // TODO: Replace with the result of calling the server
-    const user = FakeData.instance.firstUser?.dto;
+    // // TODO: Replace with the result of calling the server
+    // const user = FakeData.instance.firstUser?.dto;
 
-    return [user!, FakeData.instance.authToken.dto];
+    // return [user!, FakeData.instance.authToken.dto];
 
-    // return await this.userDAO.register(
-    //   firstName,
-    //   lastName,
-    //   alias,
-    //   password,
-    //   userImageBytes,
-    //   imageFileExtension
-    // );
+    return await this.userDAO.register(
+      firstName,
+      lastName,
+      alias,
+      password,
+      userImageBytes,
+      imageFileExtension
+    );
   }
 
   async getUser(
