@@ -94,8 +94,9 @@ export class UserService {
     alias: string
   ): Promise<UserDto | null> {
     // TODO: Replace with the result of calling server
-    const user: User | null = FakeData.instance.findUserByAlias(alias);
-    return user === null ? null : user.dto;
+    // const user: User | null = FakeData.instance.findUserByAlias(alias);
+    const user: UserDto | null = await this.userDAO.getUser(authToken, alias);
+    return user === null ? null : user;
   }
 
   async follow(

@@ -96,16 +96,14 @@ const followDao = new FollowDAODynamo();
 //     console.log(result);
 //   });
 
-// followDao
-//   .getFollowees({ token: "token", timestamp: 0 }, "johndoe", 1, null)
-//   .then((result) => {
-//     console.log(result);
-//     const lastKey = result[1];
-//     if (lastKey != undefined) {
-//       followDao
-//         .getFollowees({ token: "token", timestamp: 0 }, "johndoe", 1, lastKey)
-//         .then((result) => {
-//           console.log(result);
-//         });
-//     }
-//   });
+followDao
+  .getPageOfFollowees({ token: "token", timestamp: 0 }, "johndoe", 10, null)
+  .then((result) => {
+    console.log(result);
+  });
+
+followDao
+  .getPageOfFollowers({ token: "token", timestamp: 0 }, "johndoe", 10, null)
+  .then((result) => {
+    console.log(result);
+  });

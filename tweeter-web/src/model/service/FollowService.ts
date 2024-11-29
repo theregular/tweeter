@@ -17,7 +17,7 @@ export class FollowService {
     lastItem: User | null
   ): Promise<[User[], boolean]> {
     const request: PagedItemRequest<UserDto> = {
-      authToken: authToken,
+      authToken: authToken.dto,
       userAlias,
       pageSize,
       lastItem: lastItem
@@ -40,7 +40,7 @@ export class FollowService {
     lastItem: User | null
   ): Promise<[User[], boolean]> {
     const request: PagedItemRequest<UserDto> = {
-      authToken: authToken,
+      authToken: authToken.dto,
       userAlias,
       pageSize,
       lastItem: lastItem

@@ -1,14 +1,14 @@
 import { AuthTokenDto, UserDto } from "tweeter-shared";
 
 export interface IFollowDAO {
-  getFollowers(
+  getPageOfFollowees(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]>;
 
-  getFollowees(
+  getPageOfFollowers(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,

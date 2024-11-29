@@ -13,7 +13,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 //Handle AuthToken
 
 export class FollowDAODynamo implements IFollowDAO {
-  readonly followtableName = "follow";
+  readonly followTableName = "follow";
   readonly indexName = "followee_index";
   readonly followerHandle = "follower_handle";
   readonly followeeHandle = "followee_handle";
@@ -24,14 +24,14 @@ export class FollowDAODynamo implements IFollowDAO {
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
-  async getFollowees(
+  async getPageOfFollowees(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       KeyConditionExpression: `${this.followerHandle} = :follower_handle`,
       ExpressionAttributeValues: {
         ":follower_handle": userAlias,
@@ -65,24 +65,32 @@ export class FollowDAODynamo implements IFollowDAO {
 
     const userResult = await this.client.send(new BatchGetCommand(userParams));
 
-    const followees =
-      (userResult.Responses?.[this.userTableName] as UserDto[]) || [];
+    const followees = (userResult.Responses?.[this.userTableName] || []).map(
+      (item) => {
+        return {
+          alias: item.alias,
+          firstName: item.first_name,
+          lastName: item.last_name,
+          // Add other UserDto properties here
+        } as UserDto;
+      }
+    );
 
-    const lastKey: boolean = result.LastEvaluatedKey
+    const lastKey = result.LastEvaluatedKey
       ? result.LastEvaluatedKey[this.followeeHandle]
       : undefined;
 
-    return [followees, lastKey];
+    return [followees, lastKey ? true : false];
   }
 
-  async getFollowers(
+  async getPageOfFollowers(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       IndexName: this.indexName,
       KeyConditionExpression: `${this.followeeHandle} = :followee_handle`,
       ExpressionAttributeValues: {
@@ -117,14 +125,22 @@ export class FollowDAODynamo implements IFollowDAO {
 
     const userResult = await this.client.send(new BatchGetCommand(userParams));
 
-    const followers =
-      (userResult.Responses?.[this.userTableName] as UserDto[]) || [];
+    const followers = (userResult.Responses?.[this.userTableName] || []).map(
+      (item) => {
+        return {
+          alias: item.alias,
+          firstName: item.first_name,
+          lastName: item.last_name,
+          // Add other UserDto properties here
+        } as UserDto;
+      }
+    );
 
-    const lastKey: boolean = result.LastEvaluatedKey
+    const lastKey = result.LastEvaluatedKey
       ? result.LastEvaluatedKey[this.followerHandle]
       : undefined;
 
-    return [followers, lastKey];
+    return [followers, lastKey ? true : false];
   }
 
   async getFollowerCount(
@@ -132,7 +148,7 @@ export class FollowDAODynamo implements IFollowDAO {
     user: UserDto | null
   ): Promise<number> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       IndexName: this.indexName,
       KeyConditionExpression: `${this.followeeHandle} = :followee_handle`,
       ExpressionAttributeValues: {
@@ -154,7 +170,7 @@ export class FollowDAODynamo implements IFollowDAO {
     user: UserDto | null
   ): Promise<number> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       KeyConditionExpression: `${this.followerHandle} = :follower_handle`,
       ExpressionAttributeValues: {
         ":follower_handle": user?.alias,
@@ -176,7 +192,7 @@ export class FollowDAODynamo implements IFollowDAO {
     toFollowAlias: string
   ): Promise<[followerCount: number, followeeCount: number]> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       Item: {
         [this.followerHandle]: alias,
         [this.followeeHandle]: toFollowAlias,
@@ -200,7 +216,7 @@ export class FollowDAODynamo implements IFollowDAO {
     toUnfollowAlias: string
   ): Promise<[followerCount: number, followeeCount: number]> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       Key: {
         [this.followerHandle]: alias,
         [this.followeeHandle]: toUnfollowAlias,
@@ -224,7 +240,7 @@ export class FollowDAODynamo implements IFollowDAO {
     selectedUser: UserDto
   ): Promise<boolean> {
     const params = {
-      TableName: this.followtableName,
+      TableName: this.followTableName,
       Key: {
         [this.followerHandle]: user.alias,
         [this.followeeHandle]: selectedUser.alias,
