@@ -1,8 +1,24 @@
 import { Buffer } from "buffer";
-import { AuthToken, FakeData, User, UserDto } from "tweeter-shared";
+import { FakeData, User, UserDto } from "tweeter-shared";
 import { AuthTokenDto } from "tweeter-shared/src";
+import { IUserDAO } from "../../daos/user/IUserDAO";
+import { IDAOFactory } from "../../daos/factory/IDAOFactory";
+import { getDaoFactory } from "./getDaoFactory";
+import { IFollowDAO } from "../../daos/follow/IFollowDAO";
+
+//TODO: move follow stuff to FollowService
 
 export class UserService {
+  private daoFactory: IDAOFactory;
+  private userDAO: IUserDAO;
+  // private followDAO: IFollowDAO;
+
+  constructor() {
+    this.daoFactory = getDaoFactory();
+    this.userDAO = this.daoFactory.getUserDAO();
+    // this.followDAO = this.daoFactory.getFollowDAO();
+  }
+
   async getIsFollowerStatus(
     authToken: AuthTokenDto,
     user: UserDto,
@@ -13,7 +29,7 @@ export class UserService {
   }
 
   public async getFollowerCount(
-    token: string,
+    token: AuthTokenDto,
     user: UserDto | null
   ): Promise<number> {
     // TODO: Replace with the result of calling server
@@ -21,22 +37,24 @@ export class UserService {
   }
 
   public async getFolloweeCount(
-    token: string,
+    token: AuthTokenDto,
     user: UserDto | null
   ): Promise<number> {
     // TODO: Replace with the result of calling server
     return FakeData.instance.getFolloweeCount(user?.alias ? user?.alias : "");
   }
 
-  async login(alias: string, password: string): Promise<[UserDto, string]> {
-    // TODO: Replace with the result of calling the server
-    const user = FakeData.instance.firstUser;
+  async login(
+    alias: string,
+    password: string
+  ): Promise<[UserDto, AuthTokenDto]> {
+    const [user, authToken] = await this.userDAO.login(alias, password);
 
     if (user === null) {
       throw new Error("Invalid alias or password");
     }
 
-    return [user.dto, FakeData.instance.authToken.token];
+    return [user, authToken];
   }
 
   async logout(authToken: AuthTokenDto): Promise<void> {
@@ -51,19 +69,24 @@ export class UserService {
     password: string,
     userImageBytes: string,
     imageFileExtension: string
-  ): Promise<[UserDto, AuthToken]> {
+  ): Promise<[UserDto, AuthTokenDto]> {
     // Not needed now, but will be needed when you make the request to the server in milestone 3
     // const imageStringBase64: string =
     //   Buffer.from(userImageBytes).toString("base64");
 
     // TODO: Replace with the result of calling the server
-    const user = FakeData.instance.firstUser;
+    const user = FakeData.instance.firstUser?.dto;
 
-    if (user === null) {
-      throw new Error("Invalid registration");
-    }
+    return [user!, FakeData.instance.authToken.dto];
 
-    return [user.dto, FakeData.instance.authToken];
+    // return await this.userDAO.register(
+    //   firstName,
+    //   lastName,
+    //   alias,
+    //   password,
+    //   userImageBytes,
+    //   imageFileExtension
+    // );
   }
 
   async getUser(
@@ -76,7 +99,7 @@ export class UserService {
   }
 
   async follow(
-    token: string,
+    token: AuthTokenDto,
     userToFollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
     // Pause so we can see the follow message. Remove when connected to the server
@@ -91,7 +114,7 @@ export class UserService {
   }
 
   async unfollow(
-    token: string,
+    token: AuthTokenDto,
     userToUnfollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
     // Pause so we can see the unfollow message. Remove when connected to the server

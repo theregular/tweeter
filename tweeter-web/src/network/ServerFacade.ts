@@ -89,7 +89,7 @@ export class ServerFacade {
         return user;
       },
       (response: LoginResponse, items: User) => {
-        return [items, new AuthToken(response.token, 1)];
+        return [items, AuthToken.fromDto(response.token)!];
       },
       "Invalid alias or password"
     );
@@ -110,21 +110,19 @@ export class ServerFacade {
       "/auth/register",
       (response: RegisterResponse) => {
         const userDto = response.user;
-        const user: User | null = userDto
-          ? new User(
-              userDto.firstName,
-              userDto.lastName,
-              userDto.alias,
-              userDto.imageUrl
-            )
-          : null;
+        // const user: User | null = userDto
+        //   ? new User(
+        //       userDto.firstName,
+        //       userDto.lastName,
+        //       userDto.alias,
+        //       userDto.imageUrl
+        //     )
+        //   : null;
+        const user: User | null = userDto ? User.fromDto(userDto) : null;
         return user;
       },
       (response: RegisterResponse, items: User) => {
-        return [
-          items,
-          new AuthToken(response.authToken.token, response.authToken.timestamp),
-        ];
+        return [items, AuthToken.fromDto(response.authToken)!];
       },
       "Could not register user"
     );

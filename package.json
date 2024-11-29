@@ -8,6 +8,7 @@
   "author": "JWilkerson",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/lib-dynamodb": "^3.699.0",
     "isomorphic-fetch": "^3.0.0",
     "rimraf": "^5.0.5",
     "vite-plugin-dts": "^3.7.3"

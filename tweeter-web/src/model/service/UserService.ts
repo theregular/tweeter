@@ -47,7 +47,7 @@ export class UserService {
     user: User
   ): Promise<number> {
     const request: GetFollowCountRequest = {
-      token: authToken.token,
+      token: authToken.dto,
       user: {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -63,7 +63,7 @@ export class UserService {
     user: User
   ): Promise<number> {
     const request: GetFollowCountRequest = {
-      token: authToken.token,
+      token: authToken.dto,
       user: {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -139,7 +139,7 @@ export class UserService {
     userToFollow: User
   ): Promise<[followerCount: number, followeeCount: number]> {
     const request: FollowRequest = {
-      token: authToken.token,
+      token: authToken.dto,
       user: {
         firstName: userToFollow.firstName,
         lastName: userToFollow.lastName,
@@ -155,7 +155,7 @@ export class UserService {
     userToUnfollow: User
   ): Promise<[followerCount: number, followeeCount: number]> {
     const request: FollowRequest = {
-      token: authToken.token,
+      token: authToken.dto,
       user: {
         firstName: userToUnfollow.firstName,
         lastName: userToUnfollow.lastName,
