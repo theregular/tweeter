@@ -5,7 +5,7 @@ import {
   GetCommand,
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 
 export class UserDAODynamo implements IUserDAO {
   readonly userTableName = "user";
@@ -116,5 +116,33 @@ export class UserDAODynamo implements IUserDAO {
       lastName: result.Item[this.lastName],
       imageUrl: "TODO: implement profile image",
     };
+  }
+
+  async getUsers(
+    authToken: AuthTokenDto,
+    userAlias: string[]
+  ): Promise<UserDto[]> {
+    const params = {
+      TableName: this.userTableName,
+      FilterExpression: `${this.alias} IN (:aliases)`,
+      ExpressionAttributeValues: {
+        ":aliases": { SS: userAlias },
+      },
+    };
+
+    const result = await this.client.send(new ScanCommand(params));
+
+    if (result.Items === undefined) {
+      throw new Error("Error getting users");
+    }
+
+    return result.Items.map((item) => {
+      return {
+        firstName: item[this.firstName]?.S || "",
+        lastName: item[this.lastName]?.S || "",
+        alias: item[this.alias]?.S || "",
+        imageUrl: "TODO: implement profile image",
+      };
+    });
   }
 }

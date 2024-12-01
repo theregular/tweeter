@@ -13,5 +13,5 @@ export interface IStatusDAO {
     pageSize: number,
     lastItem: StatusDto | null
   ): Promise<[StatusDto[], boolean]>;
-  postStatus(token: string, newStatus: StatusDto): Promise<void>;
+  postStatus(token: AuthTokenDto, newStatus: StatusDto): Promise<void>;
 }

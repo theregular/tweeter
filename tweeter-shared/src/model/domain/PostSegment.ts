@@ -44,7 +44,7 @@ export class PostSegment {
   public get dto(): PostSegmentDto {
     return {
       text: this.text,
-      startPostion: this.startPostion,
+      startPosition: this.startPostion,
       endPosition: this.endPosition,
       type: this.type,
     };
