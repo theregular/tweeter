@@ -2,6 +2,7 @@ import { IFileDAO } from "../file/IFileDAO";
 import { FollowDAODynamo } from "../follow/FollowDAODynamo";
 import { IFollowDAO } from "../follow/IFollowDAO";
 import { IStatusDAO } from "../status/IStatusDAO";
+import { StatusDAODynamo } from "../status/StatusDAODynamo";
 import { IUserDAO } from "../user/IUserDAO";
 import { UserDAODynamo } from "../user/UserDAODynamo";
 import { IDAOFactory } from "./IDAOFactory";
@@ -26,7 +27,7 @@ export class DAOFactoryDynamo implements IDAOFactory {
   }
 
   getStatusDAO(): IStatusDAO {
-    throw new Error("Method not implemented.");
+    return new StatusDAODynamo();
   }
 
   getFileDAO(): IFileDAO {

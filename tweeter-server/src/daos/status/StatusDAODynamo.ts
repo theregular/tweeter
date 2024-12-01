@@ -61,13 +61,14 @@ export class StatusDAODynamo implements IStatusDAO {
     const statuses = result.Items?.map((item) => {
       return {
         user: {
-          // test user for now
+          //  TODO: implement fetch for user info
           alias: userAlias,
-          firstName: "test",
-          lastName: "user",
+          firstName: "implement fetch",
+          lastName: "for user info",
           imageUrl: "test",
         },
         post: item[this.post].S,
+        // TODO: check if this is correct
         timestamp: parseInt(item[this.timestamp]?.N || "0"),
         segments: (item[this.segments].L || []).map((segment) => {
           return {
