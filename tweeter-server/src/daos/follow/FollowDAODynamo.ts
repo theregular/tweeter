@@ -19,7 +19,7 @@ export class FollowDAODynamo implements IFollowDAO {
   readonly followeeHandle = "followee_handle";
   readonly followerName = "follower_name";
   readonly followeeName = "followee_name";
-  readonly authToken = "auth_token";
+  // readonly authToken = "auth_token";
   readonly userTableName = "user"; // Add user table name
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
@@ -39,7 +39,6 @@ export class FollowDAODynamo implements IFollowDAO {
       Limit: pageSize,
       ExclusiveStartKey: lastItem?.alias
         ? {
-            [this.authToken]: authToken,
             [this.followerHandle]: userAlias,
             [this.followeeHandle]: lastItem.alias,
           }
@@ -99,7 +98,6 @@ export class FollowDAODynamo implements IFollowDAO {
       Limit: pageSize,
       ExclusiveStartKey: lastItem?.alias
         ? {
-            [this.authToken]: authToken,
             [this.followeeHandle]: userAlias,
             [this.followerHandle]: lastItem.alias,
           }

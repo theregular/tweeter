@@ -1,28 +1,29 @@
 import { UserDAODynamo } from "./user/UserDAODynamo";
 import { FollowDAODynamo } from "./follow/FollowDAODynamo";
 import { StatusDAODynamo } from "./status/StatusDAODynamo";
+import { Type } from "tweeter-shared";
 
 const userDao = new UserDAODynamo();
 const followDao = new FollowDAODynamo();
 const statusDao = new StatusDAODynamo();
 
 // userDao
-//   .register("John", "Doe", "johndoe", "password", "0", "jpg")
+//   .register("John", "Doe", "@johndoe", "password", "0", "jpg")
 //   .then((result) => {
 //     console.log(result);
 //   });
 
 // userDao
-//   .register("Jane", "Smith", "janesmith", "password", "0", "jpg")
+//   .register("Jane", "Smith", "@janesmith", "password", "0", "jpg")
 //   .then((result) => {
 //     console.log(result);
 //   });
 
-// userDao.register("qwer", "qwer", "qwer", "qwer", "0", "jpg").then((result) => {
+// userDao.register("qwer", "qwer", "@qwer", "qwer", "0", "jpg").then((result) => {
 //   console.log(result);
 // });
 
-// userDao.login("johndoe", "password").then((result) => {
+// userDao.login("@johndoe", "password").then((result) => {
 //   console.log(result);
 // });
 
@@ -39,19 +40,19 @@ const statusDao = new StatusDAODynamo();
 // });
 
 // followDao
-//   .follow({ token: "token", timestamp: 0 }, "johndoe", "janesmith")
+//   .follow({ token: "token", timestamp: 0 }, "@johndoe", "@janesmith")
 //   .then((result) => {
 //     console.log(result);
 //   });
 
 // followDao
-//   .follow({ token: "token", timestamp: 0 }, "janesmith", "johndoe")
+//   .follow({ token: "token", timestamp: 0 }, "@janesmith", "@johndoe")
 //   .then((result) => {
 //     console.log(result);
 //   });
 
 // followDao
-//   .follow({ token: "token", timestamp: 0 }, "johndoe", "qwer")
+//   .follow({ token: "token", timestamp: 0 }, "@johndoe", "@qwer")
 //   .then((result) => {
 //     console.log(result);
 //   });
@@ -66,13 +67,13 @@ const statusDao = new StatusDAODynamo();
 //   .getIsFollowerStatus(
 //     { token: "token", timestamp: 0 },
 //     {
-//       alias: "qwer",
+//       alias: "@johndoe",
 //       firstName: "John",
 //       lastName: "Doe",
 //       imageUrl: "TODO: implement profile image",
 //     },
 //     {
-//       alias: "johndoe",
+//       alias: "@qwer",
 //       firstName: "Qwer",
 //       lastName: "Qwer",
 //       imageUrl: "TODO: implement profile image",
@@ -86,7 +87,7 @@ const statusDao = new StatusDAODynamo();
 //   .getFolloweeCount(
 //     { token: "token", timestamp: 0 },
 //     {
-//       alias: "johndoe",
+//       alias: "@johndoe",
 //       firstName: "John",
 //       lastName: "Doe",
 //       imageUrl: "TODO: implement profile image",
@@ -97,13 +98,166 @@ const statusDao = new StatusDAODynamo();
 //   });
 
 // followDao
-//   .getPageOfFollowees({ token: "token", timestamp: 0 }, "johndoe", 10, null)
+//   .getPageOfFollowees({ token: "token", timestamp: 0 }, "@johndoe", 10, null)
 //   .then((result) => {
 //     console.log(result);
 //   });
 
 // followDao
-//   .getPageOfFollowers({ token: "token", timestamp: 0 }, "johndoe", 10, null)
+//   .getPageOfFollowers({ token: "token", timestamp: 0 }, "@johndoe", 10, null)
 //   .then((result) => {
 //     console.log(result);
 //   });
+
+const newStatus = {
+  user: {
+    alias: "@johndoe",
+    firstName: "John",
+    lastName: "Doe",
+    imageUrl: "TODO: implement profile image",
+  },
+  post: "Hello, world!",
+  timestamp: 0,
+  segments: [
+    {
+      text: "Hello, world!",
+      startPosition: 0,
+      endPosition: 13,
+      type: Type.text,
+    },
+  ],
+};
+
+const newStatus3 = {
+  user: {
+    alias: "@johndoe",
+    firstName: "John",
+    lastName: "Doe",
+    imageUrl: "TODO: implement profile image",
+  },
+  post: "Post 0 0\n        My friend @amy likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+  timestamp: 1,
+  segments: [
+    {
+      text: "Post 0 0\n        My friend ",
+      startPosition: 0,
+      endPosition: 28,
+      type: Type.text,
+    },
+    {
+      text: "@amy",
+      startPosition: 28,
+      endPosition: 33,
+      type: Type.alias,
+    },
+    {
+      text: " likes this website: ",
+      startPosition: 33,
+      endPosition: 55,
+      type: Type.text,
+    },
+    {
+      text: "http://byu.edu",
+      startPosition: 55,
+      endPosition: 68,
+      type: Type.url,
+    },
+    {
+      text: ". Do you? \n        Or do you prefer this one: ",
+      startPosition: 68,
+      endPosition: 104,
+      type: Type.text,
+    },
+    {
+      text: "http://cs.byu.edu",
+      startPosition: 104,
+      endPosition: 119,
+      type: Type.url,
+    },
+    {
+      text: "?",
+      startPosition: 119,
+      endPosition: 120,
+      type: Type.text,
+    },
+  ],
+};
+
+const newStatus2 = {
+  user: {
+    alias: "@janesmith",
+    firstName: "Jane",
+    lastName: "Smith",
+    imageUrl: "TODO: implement profile image",
+  },
+  post: "Post 0 0\n        My friend @amy likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+  timestamp: 1,
+  segments: [
+    {
+      text: "Post 0 0\n        My friend ",
+      startPosition: 0,
+      endPosition: 28,
+      type: Type.text,
+    },
+    {
+      text: "@amy",
+      startPosition: 28,
+      endPosition: 33,
+      type: Type.alias,
+    },
+    {
+      text: " likes this website: ",
+      startPosition: 33,
+      endPosition: 55,
+      type: Type.text,
+    },
+    {
+      text: "http://byu.edu",
+      startPosition: 55,
+      endPosition: 68,
+      type: Type.url,
+    },
+    {
+      text: ". Do you? \n        Or do you prefer this one: ",
+      startPosition: 68,
+      endPosition: 104,
+      type: Type.text,
+    },
+    {
+      text: "http://cs.byu.edu",
+      startPosition: 104,
+      endPosition: 119,
+      type: Type.url,
+    },
+    {
+      text: "?",
+      startPosition: 119,
+      endPosition: 120,
+      type: Type.text,
+    },
+  ],
+};
+
+// statusDao
+//   .postStatus({ token: "token", timestamp: 0 }, newStatus)
+//   .then((result) => {
+//     console.log(result);
+//   });
+
+// statusDao
+//   .postStatus({ token: "token", timestamp: 0 }, newStatus2)
+//   .then((result) => {
+//     console.log(result);
+//   });
+
+// statusDao
+//   .postStatus({ token: "token", timestamp: 0 }, newStatus3)
+//   .then((result) => {
+//     console.log(result);
+//   });
+
+statusDao
+  .getStoryPage({ token: "token", timestamp: 0 }, "@johndoe", 1, null)
+  .then((result) => {
+    console.log(result);
+  });

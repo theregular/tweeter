@@ -128,6 +128,7 @@ export class UserService {
       authToken: authTokenDto,
       alias,
     };
+    console.log("REQUEST FROM USERSERVICE ON WEB MODULE", request);
     return await this.serverFacade.getUser(request);
   }
 
