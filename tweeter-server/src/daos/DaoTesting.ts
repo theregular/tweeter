@@ -1,8 +1,10 @@
 import { UserDAODynamo } from "./user/UserDAODynamo";
 import { FollowDAODynamo } from "./follow/FollowDAODynamo";
+import { StatusDAODynamo } from "./status/StatusDAODynamo";
 
 const userDao = new UserDAODynamo();
 const followDao = new FollowDAODynamo();
+const statusDao = new StatusDAODynamo();
 
 // userDao
 //   .register("John", "Doe", "johndoe", "password", "0", "jpg")
@@ -32,11 +34,9 @@ const followDao = new FollowDAODynamo();
 //   console.log(result);
 // });
 
-// userDao
-//   .getUser({ token: "token", timestamp: 0 }, "janesmith")
-//   .then((result) => {
-//     console.log(result);
-//   });
+// userDao.getUser({ token: "token", timestamp: 0 }, "johndoe").then((result) => {
+//   console.log(result);
+// });
 
 // followDao
 //   .follow({ token: "token", timestamp: 0 }, "johndoe", "janesmith")
@@ -96,14 +96,14 @@ const followDao = new FollowDAODynamo();
 //     console.log(result);
 //   });
 
-followDao
-  .getPageOfFollowees({ token: "token", timestamp: 0 }, "johndoe", 10, null)
-  .then((result) => {
-    console.log(result);
-  });
+// followDao
+//   .getPageOfFollowees({ token: "token", timestamp: 0 }, "johndoe", 10, null)
+//   .then((result) => {
+//     console.log(result);
+//   });
 
-followDao
-  .getPageOfFollowers({ token: "token", timestamp: 0 }, "johndoe", 10, null)
-  .then((result) => {
-    console.log(result);
-  });
+// followDao
+//   .getPageOfFollowers({ token: "token", timestamp: 0 }, "johndoe", 10, null)
+//   .then((result) => {
+//     console.log(result);
+//   });

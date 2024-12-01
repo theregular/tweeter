@@ -1,5 +1,0 @@
-* Register lambda func returns user fine, but authtoken has data members with _token and _timestamp, could cause issues potentially?
-
-
-
-

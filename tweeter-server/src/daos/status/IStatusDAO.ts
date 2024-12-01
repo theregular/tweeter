@@ -1,13 +1,13 @@
 import { AuthTokenDto, StatusDto } from "tweeter-shared";
 
 export interface IStatusDAO {
-  loadMoreStoryItems(
+  getStoryPage(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: StatusDto | null
   ): Promise<[StatusDto[], boolean]>;
-  loadMoreFeedItems(
+  getFeedPage(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,

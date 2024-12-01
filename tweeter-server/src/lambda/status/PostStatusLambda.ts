@@ -7,7 +7,7 @@ export const handler = async (
 ): Promise<TweeterResponse> => {
   const statusService = new StatusService();
   const { authToken, status } = request;
-  const response = await statusService.postStatus(authToken.token, status);
+  const response = await statusService.postStatus(authToken, status);
   return {
     success: true,
     message: null,

@@ -3,7 +3,8 @@ import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 
 import { AuthTokenDto, StatusDto, PostSegmentDto, Type } from "tweeter-shared";
 import { UserDAODynamo } from "../user/UserDAODynamo";
-export class StatusDAODynamo {
+import { IStatusDAO } from "./IStatusDAO";
+export class StatusDAODynamo implements IStatusDAO {
   readonly statusTableName = "status";
   readonly alias = "alias";
   readonly post = "post";
@@ -13,7 +14,21 @@ export class StatusDAODynamo {
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
-  async loadMoreStoryItems(
+  // all statuses posted by users that the given user follows, sorted from newest to oldest.
+
+  async getFeedPage(
+    authToken: AuthTokenDto,
+    userAlias: string,
+    pageSize: number,
+    lastItem: StatusDto | null
+  ): Promise<[StatusDto[], boolean]> {
+    // TODO: CHANGE THIS
+    return this.getStoryPage(authToken, userAlias, pageSize, lastItem);
+  }
+
+  // all statuses posted by a given user, sorted from newest to oldest.
+
+  async getStoryPage(
     authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
@@ -75,5 +90,31 @@ export class StatusDAODynamo {
       : undefined;
 
     return [statusDtos, lastKey !== undefined];
+  }
+
+  async postStatus(
+    authToken: AuthTokenDto,
+    newStatus: StatusDto
+  ): Promise<void> {
+    const params = {
+      TableName: this.statusTableName,
+      Item: {
+        [this.alias]: { S: newStatus.user.alias },
+        [this.timestamp]: { N: newStatus.timestamp.toString() },
+        [this.post]: { S: newStatus.post },
+        [this.segments]: {
+          L: newStatus.segments.map((segment) => ({
+            M: {
+              text: { S: segment.text },
+              startPosition: { N: segment.startPosition.toString() },
+              endPosition: { N: segment.endPosition.toString() },
+              type: { S: segment.type },
+            },
+          })),
+        },
+      },
+    };
+
+    await this.client.send(new QueryCommand(params));
   }
 }

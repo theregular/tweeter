@@ -5,12 +5,21 @@ export const handler = async (
   request: LoginRequest
 ): Promise<LoginResponse> => {
   const service = new UserService();
-  const [user, token] = await service.login(request.alias, request.password);
 
-  return {
-    success: true,
-    message: null,
-    user,
-    token,
-  };
+  try {
+    const [user, token] = await service.login(request.alias, request.password);
+    return {
+      success: true,
+      message: null,
+      user,
+      token,
+    };
+  } catch (e) {
+    return {
+      success: false,
+      message: (e as Error).message,
+      user: null,
+      token: null,
+    };
+  }
 };

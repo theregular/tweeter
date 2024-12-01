@@ -87,10 +87,7 @@ export class UserService {
 
   public async logout(authToken: AuthToken): Promise<void> {
     const request: LogoutRequest = {
-      authToken: {
-        token: authToken.token,
-        timestamp: authToken.timestamp,
-      },
+      authToken: authToken.dto,
     };
     await this.serverFacade.logout(request);
   }
