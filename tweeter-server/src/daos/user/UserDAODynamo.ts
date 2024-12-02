@@ -6,6 +6,7 @@ import {
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { FileDAOS3 } from "../file/FileDAOS3";
 
 export class UserDAODynamo implements IUserDAO {
   readonly userTableName = "user";
@@ -13,11 +14,15 @@ export class UserDAODynamo implements IUserDAO {
   readonly alias = "alias";
   readonly firstName = "first_name";
   readonly lastName = "last_name";
+  readonly imageUrl = "image_url";
   readonly password = "password";
+
+  //TODO: find a different way to access the fileDAOS3
+  private fileDAOS3 = new FileDAOS3();
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
-  // TODO: handle image uploads
+  // TODO: handle image uploads other than png?
   // TODO: handle errors (invalid alias, duplicate alias, etc.)
   // TODO: implement authtoken generation and handling
   // TODO: add password hashing
@@ -28,6 +33,7 @@ export class UserDAODynamo implements IUserDAO {
     alias: string,
     password: string,
     userImageBytes: string,
+    // S3DAO automatically handles images as png when uploaded.
     imageFileExtension: string
   ): Promise<[UserDto, AuthTokenDto]> {
     //add alias and password to auth table
@@ -41,6 +47,12 @@ export class UserDAODynamo implements IUserDAO {
 
     await this.client.send(new PutCommand(authCommand));
 
+    //upload image to S3
+    const imageUrl = await this.fileDAOS3.putImage(
+      alias + "." + imageFileExtension,
+      userImageBytes
+    );
+
     //add user info to user table
     const userCommand = {
       TableName: this.userTableName,
@@ -48,6 +60,7 @@ export class UserDAODynamo implements IUserDAO {
         [this.alias]: alias,
         [this.firstName]: firstName,
         [this.lastName]: lastName,
+        [this.imageUrl]: imageUrl,
       },
     };
 
@@ -58,8 +71,9 @@ export class UserDAODynamo implements IUserDAO {
         alias,
         firstName,
         lastName,
-        imageUrl: "TODO: implement profile image",
+        imageUrl,
       },
+      //TODO: implement auth token generation
       {
         token: "token",
         timestamp: 0,
@@ -114,7 +128,7 @@ export class UserDAODynamo implements IUserDAO {
       alias: result.Item[this.alias],
       firstName: result.Item[this.firstName],
       lastName: result.Item[this.lastName],
-      imageUrl: "TODO: implement profile image",
+      imageUrl: result.Item[this.imageUrl],
     };
   }
 
@@ -141,7 +155,7 @@ export class UserDAODynamo implements IUserDAO {
         firstName: item[this.firstName]?.S || "",
         lastName: item[this.lastName]?.S || "",
         alias: item[this.alias]?.S || "",
-        imageUrl: "TODO: implement profile image",
+        imageUrl: item[this.imageUrl]?.S || "",
       };
     });
   }

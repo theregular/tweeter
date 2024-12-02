@@ -1,8 +1,8 @@
-import { UserDAODynamo } from "./user/UserDAODynamo";
-import { FollowDAODynamo } from "./follow/FollowDAODynamo";
-import { StatusDAODynamo } from "./status/StatusDAODynamo";
+import { UserDAODynamo } from "../user/UserDAODynamo";
+import { FollowDAODynamo } from "../follow/FollowDAODynamo";
+import { StatusDAODynamo } from "../status/StatusDAODynamo";
 import { Type } from "tweeter-shared";
-import { FileDAOS3 } from "./file/FileDAOS3";
+import { FileDAOS3 } from "../file/FileDAOS3";
 import fs from "fs";
 
 const userDao = new UserDAODynamo();
@@ -265,31 +265,31 @@ const fileDao = new FileDAOS3();
 //     console.log(result);
 //   });
 
-function encodeImageToBase64(filePath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data.toString("base64"));
-      }
-    });
-  });
-}
+// function encodeImageToBase64(filePath: string): Promise<string> {
+//   return new Promise((resolve, reject) => {
+//     fs.readFile(filePath, (err, data) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(data.toString("base64"));
+//       }
+//     });
+//   });
+// }
 
-const imagePath = "./test_images/mario.png"; // Update this path to the location of your mario.png file
+// const imagePath = "./test_images/mario.png"; // Update this path to the location of your mario.png file
 
-encodeImageToBase64(imagePath)
-  .then((base64Image) => {
-    fileDao
-      .putImage("mario.png", base64Image)
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.error("Error uploading image:", error);
-      });
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+// encodeImageToBase64(imagePath)
+//   .then((base64Image) => {
+//     fileDao
+//       .putImage("@test1.png", base64Image)
+//       .then((result) => {
+//         console.log(result);
+//       })
+//       .catch((error) => {
+//         console.error("Error uploading image:", error);
+//       });
+//   })
+//   .catch((error) => {
+//     console.error("Error encoding image:", error);
+//   });
