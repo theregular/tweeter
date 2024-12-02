@@ -30,6 +30,7 @@ export class DAOFactoryDynamo implements IDAOFactory {
     return new StatusDAODynamo();
   }
 
+  // TODO: Is this needed?
   getFileDAO(): IFileDAO {
     throw new Error("Method not implemented.");
   }

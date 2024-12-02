@@ -8,7 +8,11 @@ import {
   QueryCommand,
   BatchGetCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  CreateTableCommand,
+  DeleteTableCommand,
+  DynamoDBClient,
+} from "@aws-sdk/client-dynamodb";
 
 //Handle AuthToken
 
@@ -20,7 +24,7 @@ export class FollowDAODynamo implements IFollowDAO {
   readonly followerName = "follower_name";
   readonly followeeName = "followee_name";
   // readonly authToken = "auth_token";
-  readonly userTableName = "user"; // Add user table name
+  readonly userTableName = "user";
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
@@ -248,5 +252,59 @@ export class FollowDAODynamo implements IFollowDAO {
     const result = await this.client.send(new GetCommand(params));
 
     return result.Item !== undefined;
+  }
+
+  async deleteFollowTable(): Promise<void> {
+    try {
+      const deleteParams = {
+        TableName: this.followTableName,
+      };
+      await this.client.send(new DeleteTableCommand(deleteParams));
+      console.log(this.followTableName + " table deleted");
+    } catch (error) {
+      throw new Error("DynamoDB delete all failed with: " + error);
+    }
+  }
+
+  async createFollowTable(): Promise<void> {
+    const command = new CreateTableCommand({
+      TableName: this.followTableName,
+      KeySchema: [
+        { AttributeName: this.followerHandle, KeyType: "HASH" },
+        { AttributeName: this.followeeHandle, KeyType: "RANGE" },
+      ],
+      AttributeDefinitions: [
+        { AttributeName: this.followerHandle, AttributeType: "S" },
+        { AttributeName: this.followeeHandle, AttributeType: "S" },
+      ],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 3,
+        WriteCapacityUnits: 3,
+      },
+      BillingMode: "PROVISIONED",
+      GlobalSecondaryIndexes: [
+        {
+          IndexName: this.indexName, // Name of the index
+          KeySchema: [
+            { AttributeName: this.followeeHandle, KeyType: "HASH" }, // GSI Partition key
+            { AttributeName: this.followerHandle, KeyType: "RANGE" }, // GSI Sort key (optional)
+          ],
+          Projection: {
+            ProjectionType: "ALL", // Include all attributes in the index
+          },
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 3, // GSI read capacity
+            WriteCapacityUnits: 3, // GSI write capacity
+          },
+        },
+      ],
+    });
+
+    try {
+      await this.client.send(command);
+      console.log(this.followTableName + " table created");
+    } catch (error) {
+      throw new Error("DynamoDB create failed with: " + error);
+    }
   }
 }

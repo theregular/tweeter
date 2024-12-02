@@ -5,7 +5,12 @@ import {
   GetCommand,
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import {
+  CreateTableCommand,
+  DeleteTableCommand,
+  DynamoDBClient,
+  ScanCommand,
+} from "@aws-sdk/client-dynamodb";
 import { FileDAOS3 } from "../file/FileDAOS3";
 
 export class UserDAODynamo implements IUserDAO {
@@ -158,5 +163,44 @@ export class UserDAODynamo implements IUserDAO {
         imageUrl: item[this.imageUrl]?.S || "",
       };
     });
+  }
+
+  async deleteUserTable() {
+    try {
+      const params = {
+        TableName: this.userTableName,
+      };
+
+      await this.client.send(new DeleteTableCommand(params));
+      console.log(this.userTableName + " table deleted");
+    } catch (error) {
+      console.error("Error creating table:", error);
+      throw new Error(`Failed to delete table ${this.userTableName}`);
+    }
+  }
+
+  async createUserTable() {
+    try {
+      const command = new CreateTableCommand({
+        TableName: this.userTableName,
+        AttributeDefinitions: [
+          { AttributeName: this.alias, AttributeType: "S" }, // String
+        ],
+        KeySchema: [
+          { AttributeName: this.alias, KeyType: "HASH" }, // Partition Key
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 3,
+          WriteCapacityUnits: 3,
+        },
+        BillingMode: "PROVISIONED",
+      });
+
+      await this.client.send(command);
+      console.log(this.userTableName + " table created");
+    } catch (error) {
+      console.error("Error creating table:", error);
+      throw new Error(`Failed to create table ${this.userTableName}`);
+    }
   }
 }
