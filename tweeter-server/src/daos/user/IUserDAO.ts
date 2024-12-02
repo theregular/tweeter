@@ -1,7 +1,6 @@
 import { AuthTokenDto, UserDto } from "tweeter-shared";
 
 export interface IUserDAO {
-  // TODO: handle image uploads
   register(
     firstName: string,
     lastName: string,

@@ -11,12 +11,12 @@ import { IFollowDAO } from "../../daos/follow/IFollowDAO";
 export class UserService {
   private daoFactory: IDAOFactory;
   private userDAO: IUserDAO;
-  // private followDAO: IFollowDAO;
+  private followDAO: IFollowDAO;
 
   constructor() {
     this.daoFactory = getDaoFactory();
     this.userDAO = this.daoFactory.getUserDAO();
-    // this.followDAO = this.daoFactory.getFollowDAO();
+    this.followDAO = this.daoFactory.getFollowDAO();
   }
 
   async getIsFollowerStatus(
@@ -25,7 +25,12 @@ export class UserService {
     selectedUser: UserDto
   ): Promise<boolean> {
     // TODO: Replace with the result of calling server
-    return FakeData.instance.isFollower();
+    // return FakeData.instance.isFollower();
+    try {
+      return this.followDAO.getIsFollowerStatus(authToken, user, selectedUser);
+    } catch (e) {
+      throw new Error("Error getting follower status");
+    }
   }
 
   public async getFollowerCount(
@@ -33,7 +38,12 @@ export class UserService {
     user: UserDto | null
   ): Promise<number> {
     // TODO: Replace with the result of calling server
-    return FakeData.instance.getFollowerCount(user?.alias ? user?.alias : "");
+    // return FakeData.instance.getFollowerCount(user?.alias ? user?.alias : "");
+    try {
+      return this.followDAO.getFollowerCount(token, user);
+    } catch (e) {
+      throw new Error("Error getting follower count ");
+    }
   }
 
   public async getFolloweeCount(
@@ -41,7 +51,11 @@ export class UserService {
     user: UserDto | null
   ): Promise<number> {
     // TODO: Replace with the result of calling server
-    return FakeData.instance.getFolloweeCount(user?.alias ? user?.alias : "");
+    try {
+      return this.followDAO.getFolloweeCount(token, user);
+    } catch (e) {
+      throw new Error("Error getting followee count");
+    }
   }
 
   async login(
@@ -57,6 +71,7 @@ export class UserService {
     return [user, authToken];
   }
 
+  //TODO: implement logout
   async logout(authToken: AuthTokenDto): Promise<void> {
     // Pause so we can see the logging out message. Delete when the call to the server is implemented.
     await new Promise((res) => setTimeout(res, 1000));
@@ -108,8 +123,12 @@ export class UserService {
 
     // TODO: Call the server
 
-    const followerCount = await this.getFollowerCount(token, userToFollow);
-    const followeeCount = await this.getFolloweeCount(token, userToFollow);
+    const followerCount = await FakeData.instance.getFollowerCount(
+      userToFollow.alias
+    );
+    const followeeCount = await FakeData.instance.getFolloweeCount(
+      userToFollow.alias
+    );
 
     return [followerCount, followeeCount];
   }
@@ -123,8 +142,15 @@ export class UserService {
 
     // TODO: Call the server
 
-    const followerCount = await this.getFollowerCount(token, userToUnfollow);
-    const followeeCount = await this.getFolloweeCount(token, userToUnfollow);
+    // const followerCount = await this.getFollowerCount(token, userToUnfollow);
+    // const followeeCount = await this.getFolloweeCount(token, userToUnfollow);
+
+    const followerCount = await FakeData.instance.getFollowerCount(
+      userToUnfollow.alias
+    );
+    const followeeCount = await FakeData.instance.getFolloweeCount(
+      userToUnfollow.alias
+    );
 
     return [followerCount, followeeCount];
   }

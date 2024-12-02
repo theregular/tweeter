@@ -22,6 +22,12 @@ try {
 }
 
 try {
+  userDao.createPasswordTable();
+} catch (error) {
+  console.error("Error creating Password table:", error);
+}
+
+try {
   //follow
   followDao.createFollowTable();
 } catch (error) {

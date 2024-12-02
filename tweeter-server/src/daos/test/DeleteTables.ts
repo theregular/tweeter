@@ -24,6 +24,12 @@ try {
 }
 
 try {
+  userDao.deletePasswordTable();
+} catch (error) {
+  console.error("Error deleting Password Table:", (error as Error).message);
+}
+
+try {
   // follow
   followDao.deleteFollowTable();
 } catch (error) {

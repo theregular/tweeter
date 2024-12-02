@@ -42,7 +42,8 @@ export class StatusService {
     lastItem: StatusDto | null
   ): Promise<[StatusDto[], boolean]> {
     // TODO: Replace with the result of calling server
-    return this.getFakeData(lastItem, pageSize);
+    // return this.getFakeData(lastItem, pageSize);
+    return this.statusDAO.getFeedPage(authToken, userAlias, pageSize, lastItem);
   }
 
   async postStatus(token: AuthTokenDto, newStatus: StatusDto): Promise<void> {
@@ -53,15 +54,15 @@ export class StatusService {
     return this.statusDAO.postStatus(token, newStatus);
   }
 
-  private async getFakeData(
-    lastItem: StatusDto | null,
-    pageSize: number
-  ): Promise<[StatusDto[], boolean]> {
-    const [item, hasMore] = FakeData.instance.getPageOfStatuses(
-      Status.fromDto(lastItem),
-      pageSize
-    );
-    const dtos = item.map((status) => status.dto);
-    return [dtos, hasMore];
-  }
+  // private async getFakeData(
+  //   lastItem: StatusDto | null,
+  //   pageSize: number
+  // ): Promise<[StatusDto[], boolean]> {
+  //   const [item, hasMore] = FakeData.instance.getPageOfStatuses(
+  //     Status.fromDto(lastItem),
+  //     pageSize
+  //   );
+  //   const dtos = item.map((status) => status.dto);
+  //   return [dtos, hasMore];
+  // }
 }

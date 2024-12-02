@@ -1,4 +1,10 @@
-import { UserDto, AuthTokenDto } from "tweeter-shared";
+import {
+  UserDto,
+  AuthTokenDto,
+  PostSegmentDto,
+  StatusDto,
+  Type,
+} from "tweeter-shared";
 import { IFollowDAO } from "./IFollowDAO";
 import {
   DeleteCommand,
@@ -7,6 +13,7 @@ import {
   PutCommand,
   QueryCommand,
   BatchGetCommand,
+  BatchWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import {
   CreateTableCommand,
@@ -25,6 +32,16 @@ export class FollowDAODynamo implements IFollowDAO {
   readonly followeeName = "followee_name";
   // readonly authToken = "auth_token";
   readonly userTableName = "user";
+
+  //story & feed table stuff
+  readonly storyTableName = "story";
+  readonly feedTableName = "feed";
+  readonly alias = "alias";
+  readonly posterInfo = "poster_info";
+  readonly posterAlias = "poster_alias";
+  readonly timestamp = "timestamp";
+  readonly post = "post";
+  readonly segments = "segments";
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
@@ -193,21 +210,96 @@ export class FollowDAODynamo implements IFollowDAO {
     alias: string,
     toFollowAlias: string
   ): Promise<[followerCount: number, followeeCount: number]> {
-    const params = {
-      TableName: this.followTableName,
-      Item: {
-        [this.followerHandle]: alias,
-        [this.followeeHandle]: toFollowAlias,
-      },
-    };
+    try {
+      // update follow relationship
+      const followParams = {
+        TableName: this.followTableName,
+        Item: {
+          [this.followerHandle]: alias,
+          [this.followeeHandle]: toFollowAlias,
+        },
+      };
 
-    await this.client.send(new PutCommand(params));
+      await this.client.send(new PutCommand(followParams));
+      console.log("Follow relationship updated successfully");
+    } catch (error) {
+      console.error("Error updating follow relationship:", error);
+    }
 
-    // const followerCount = await this.getFollowerCount(authToken, null);
-    // const followeeCount = await this.getFolloweeCount(authToken, null);
+    let storyStatuses: StatusDto[] = [];
+    try {
+      // get corresponding followed user's posts to from story so we can add them into the feed table
+      const storyParams = {
+        TableName: this.storyTableName,
+        KeyConditionExpression: `${this.alias} = :alias`,
+        ExpressionAttributeValues: {
+          ":alias": toFollowAlias,
+        },
+        ScanIndexForward: false,
+      };
 
-    const followerCount = 69;
-    const followeeCount = 420;
+      const storyResult = await this.client.send(new QueryCommand(storyParams));
+      console.log("Story fetched successfully");
+
+      storyStatuses =
+        storyResult.Items?.map((item) => {
+          return {
+            user: {
+              alias: item[this.posterInfo].alias,
+              firstName: item[this.posterInfo].firstName,
+              lastName: item[this.posterInfo].lastName,
+              imageUrl: item[this.posterInfo].imageUrl,
+            },
+            post: item[this.post],
+            timestamp: parseInt(item[this.timestamp] || "Error"),
+            segments: (item[this.segments] || []).map((segment: any) => {
+              return {
+                type: segment.type as Type,
+                text: segment.text,
+              } as PostSegmentDto;
+            }),
+          } as StatusDto;
+        }) || [];
+
+      console.log(storyStatuses);
+    } catch (error) {
+      console.error("Error fetching story:", error);
+    }
+
+    try {
+      // add followed users posts into the feed table
+      const feedWriteRequests = storyStatuses.map((status) => ({
+        PutRequest: {
+          Item: {
+            [this.alias]: alias,
+            [this.timestamp]: status.timestamp,
+            [this.posterAlias]: status.user.alias,
+            [this.posterInfo]: status.user,
+            [this.post]: status.post,
+            [this.segments]: status.segments,
+          },
+        },
+      }));
+
+      if (feedWriteRequests.length > 0) {
+        const batchWriteParams = {
+          RequestItems: {
+            [this.feedTableName]: feedWriteRequests,
+          },
+        };
+
+        await this.client.send(new BatchWriteCommand(batchWriteParams));
+        console.log("Feed table updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating feed table:", error);
+    }
+
+    const followerCount = await this.getFollowerCount(authToken, null);
+    const followeeCount = await this.getFolloweeCount(authToken, null);
+
+    // const followerCount = 69;
+    // const followeeCount = 420;
 
     return [followerCount, followeeCount];
   }
@@ -217,7 +309,8 @@ export class FollowDAODynamo implements IFollowDAO {
     alias: string,
     toUnfollowAlias: string
   ): Promise<[followerCount: number, followeeCount: number]> {
-    const params = {
+    // update follow relationship
+    const followParams = {
       TableName: this.followTableName,
       Key: {
         [this.followerHandle]: alias,
@@ -225,13 +318,54 @@ export class FollowDAODynamo implements IFollowDAO {
       },
     };
 
-    await this.client.send(new DeleteCommand(params));
+    await this.client.send(new DeleteCommand(followParams));
 
-    // const followerCount = await this.getFollowerCount(authToken, null);
-    // const followeeCount = await this.getFolloweeCount(authToken, null);
+    // remove unfollowed user's posts from the feed table
 
-    const followerCount = 69;
-    const followeeCount = 420;
+    // get the feed of the user that's logged in
+
+    const feedParams = {
+      TableName: this.feedTableName,
+      KeyConditionExpression: `${this.alias} = :alias`,
+      ExpressionAttributeValues: {
+        ":alias": alias,
+      },
+    };
+
+    const feedResult = await this.client.send(new QueryCommand(feedParams));
+
+    // get the keys of the posts that were posted by the user that was unfollowed
+
+    const postKeys = feedResult.Items?.filter(
+      (item) => item[this.posterAlias] === toUnfollowAlias
+    );
+
+    // remove the posts from the feed table
+
+    const feedWriteRequests = postKeys?.map((item) => ({
+      DeleteRequest: {
+        Key: {
+          [this.alias]: alias,
+          [this.timestamp]: item[this.timestamp],
+        },
+      },
+    }));
+
+    if (feedWriteRequests?.length) {
+      const batchWriteParams = {
+        RequestItems: {
+          [this.feedTableName]: feedWriteRequests,
+        },
+      };
+
+      await this.client.send(new BatchWriteCommand(batchWriteParams));
+    }
+
+    const followerCount = await this.getFollowerCount(authToken, null);
+    const followeeCount = await this.getFolloweeCount(authToken, null);
+
+    // const followerCount = 69;
+    // const followeeCount = 420;
 
     return [followerCount, followeeCount];
   }

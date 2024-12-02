@@ -10,11 +10,11 @@ const followDao = new FollowDAODynamo();
 const statusDao = new StatusDAODynamo();
 const fileDao = new FileDAOS3();
 
-// userDao
-//   .register("John", "Doe", "@johndoe", "password", "0", "jpg")
-//   .then((result) => {
-//     console.log(result);
-//   });
+userDao
+  .register("John", "Doe", "@johndoe", "password", "0", "jpg")
+  .then((result) => {
+    console.log(result);
+  });
 
 // userDao
 //   .register("Jane", "Smith", "@janesmith", "password", "0", "jpg")

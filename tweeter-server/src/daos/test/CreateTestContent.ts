@@ -425,8 +425,8 @@ async function createStatuses() {
 
 async function runTests() {
   await createUsers();
-  await addFollowRelationships();
   await createStatuses();
+  await addFollowRelationships();
 }
 
 runTests();

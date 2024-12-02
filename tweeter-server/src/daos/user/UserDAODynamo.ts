@@ -1,4 +1,4 @@
-import { AuthTokenDto, UserDto } from "tweeter-shared";
+import { AuthToken, AuthTokenDto, UserDto } from "tweeter-shared";
 import { IUserDAO } from "./IUserDAO";
 import {
   DynamoDBDocumentClient,
@@ -19,11 +19,15 @@ const bcrypt = require("bcryptjs");
 export class UserDAODynamo implements IUserDAO {
   readonly userTableName = "user";
   readonly authTableName = "auth";
+  readonly passwordTableName = "password";
   readonly alias = "alias";
   readonly firstName = "first_name";
   readonly lastName = "last_name";
   readonly imageUrl = "image_url";
   readonly password = "password";
+  readonly authToken = "auth_token";
+  readonly autTokenTimestamp = "auth_token_timestamp";
+  readonly indexName = "auth_token_index";
 
   //TODO: find a different way to access the fileDAOS3
   private fileDAOS3 = new FileDAOS3();
@@ -33,7 +37,6 @@ export class UserDAODynamo implements IUserDAO {
   // TODO: handle image uploads other than png?
   // TODO: handle errors (invalid alias, duplicate alias, etc.)
   // TODO: implement authtoken generation and handling
-  // TODO: add password hashing
 
   async register(
     firstName: string,
@@ -49,12 +52,27 @@ export class UserDAODynamo implements IUserDAO {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    //add alias and hashed password to auth table
+    //add alias and hashed password to password table
+    const passwordCommand = {
+      TableName: this.passwordTableName,
+      Item: {
+        [this.alias]: alias,
+        [this.password]: hashedPassword,
+      },
+    };
+
+    await this.client.send(new PutCommand(passwordCommand));
+
+    //generate auth token and convert to dto
+    const authToken = AuthToken.Generate().dto;
+
+    //add alias and authtoken to auth table
     const authCommand = {
       TableName: this.authTableName,
       Item: {
         [this.alias]: alias,
-        [this.password]: hashedPassword,
+        [this.authToken]: authToken.token,
+        [this.autTokenTimestamp]: authToken.timestamp,
       },
     };
 
@@ -86,11 +104,7 @@ export class UserDAODynamo implements IUserDAO {
         lastName,
         imageUrl,
       },
-      //TODO: implement auth token generation
-      {
-        token: "token",
-        timestamp: 0,
-      },
+      authToken,
     ];
   }
 
@@ -98,24 +112,38 @@ export class UserDAODynamo implements IUserDAO {
     alias: string,
     password: string
   ): Promise<[UserDto, AuthTokenDto]> {
-    const authCommand = {
-      TableName: this.authTableName,
+    //get hashed password from password table
+    const passwordCommand = {
+      TableName: this.passwordTableName,
       Key: {
         [this.alias]: alias,
       },
     };
 
-    const authResult = await this.client.send(new GetCommand(authCommand));
+    const passwordResult = await this.client.send(
+      new GetCommand(passwordCommand)
+    );
 
+    //if no password is found or password is incorrect, throw error
     if (
-      authResult.Item === undefined ||
-      bcrypt.compare(password, authResult.Item[this.password]) === false
+      passwordResult.Item === undefined ||
+      bcrypt.compare(password, passwordResult.Item[this.password]) === false
     ) {
       throw new Error("Invalid alias or password");
     } else {
-      //if auth is successful, generate auth token and get user info
-      //TODO: implement auth token generation
-      const authToken = { token: "token", timestamp: 0 };
+      //if auth is successful, generate auth token and add to auth table and get user info
+      const authToken = AuthToken.Generate().dto;
+      const authCommand = {
+        TableName: this.authTableName,
+        Item: {
+          [this.alias]: alias,
+          [this.authToken]: authToken.token,
+          [this.autTokenTimestamp]: authToken.timestamp,
+        },
+      };
+
+      await this.client.send(new PutCommand(authCommand));
+
       const user = await this.getUser(authToken, alias);
 
       return [user, authToken];
@@ -201,6 +229,20 @@ export class UserDAODynamo implements IUserDAO {
     }
   }
 
+  async deletePasswordTable() {
+    try {
+      const params = {
+        TableName: this.passwordTableName,
+      };
+
+      await this.client.send(new DeleteTableCommand(params));
+      console.log(this.passwordTableName + " table deleted");
+    } catch (error) {
+      console.error("Error creating table:", error);
+      throw new Error(`Failed to delete table ${this.passwordTableName}`);
+    }
+  }
+
   async createUserTable() {
     try {
       const command = new CreateTableCommand({
@@ -230,11 +272,11 @@ export class UserDAODynamo implements IUserDAO {
     try {
       const command = new CreateTableCommand({
         TableName: this.authTableName,
-        AttributeDefinitions: [
-          { AttributeName: this.alias, AttributeType: "S" }, // String
-        ],
         KeySchema: [
           { AttributeName: this.alias, KeyType: "HASH" }, // Partition Key
+        ],
+        AttributeDefinitions: [
+          { AttributeName: this.alias, AttributeType: "S" }, // String
         ],
         ProvisionedThroughput: {
           ReadCapacityUnits: 3,
@@ -248,6 +290,31 @@ export class UserDAODynamo implements IUserDAO {
     } catch (error) {
       console.error("Error creating table:", error);
       throw new Error(`Failed to create table ${this.authTableName}`);
+    }
+  }
+
+  async createPasswordTable() {
+    try {
+      const command = new CreateTableCommand({
+        TableName: this.passwordTableName,
+        KeySchema: [
+          { AttributeName: this.alias, KeyType: "HASH" }, // Partition Key
+        ],
+        AttributeDefinitions: [
+          { AttributeName: this.alias, AttributeType: "S" }, // String
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 3,
+          WriteCapacityUnits: 3,
+        },
+        BillingMode: "PROVISIONED",
+      });
+
+      await this.client.send(command);
+      console.log(this.passwordTableName + " table created");
+    } catch (error) {
+      console.error("Error creating table:", error);
+      throw new Error(`Failed to create table ${this.passwordTableName}`);
     }
   }
 }
