@@ -28,14 +28,14 @@ function encodeImageToBase64(filePath: string): Promise<string> {
 const marioImage = "./test_images/mario.png";
 encodeImageToBase64(marioImage)
   .then((base64Image) => {
-    userDao
-      .register("Mario", "Toadstool", "@mario", "password", base64Image, "png")
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.error("Error registering user:", error);
-      });
+    userDao.register(
+      "Mario",
+      "Toadstool",
+      "@mario",
+      "password",
+      base64Image,
+      "png"
+    );
   })
   .catch((error) => {
     console.error("Error encoding image:", error);
@@ -45,14 +45,14 @@ encodeImageToBase64(marioImage)
 const luigiImage = "./test_images/luigi.png";
 encodeImageToBase64(luigiImage)
   .then((base64Image) => {
-    userDao
-      .register("Luigi", "Mario", "@luigi", "password", base64Image, "png")
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.error("Error registering user:", error);
-      });
+    userDao.register(
+      "Luigi",
+      "Mario",
+      "@luigi",
+      "password",
+      base64Image,
+      "png"
+    );
   })
   .catch((error) => {
     console.error("Error encoding image:", error);
@@ -62,14 +62,14 @@ encodeImageToBase64(luigiImage)
 const peachImage = "./test_images/peach.png";
 encodeImageToBase64(peachImage)
   .then((base64Image) => {
-    userDao
-      .register("Peach", "Princess", "@peach", "password", base64Image, "png")
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.error("Error registering user:", error);
-      });
+    userDao.register(
+      "Peach",
+      "Princess",
+      "@peach",
+      "password",
+      base64Image,
+      "png"
+    );
   })
   .catch((error) => {
     console.error("Error encoding image:", error);
@@ -79,14 +79,14 @@ encodeImageToBase64(peachImage)
 const daisyImage = "./test_images/daisy.png";
 encodeImageToBase64(daisyImage)
   .then((base64Image) => {
-    userDao
-      .register("Daisy", "Princess", "@daisy", "password", base64Image, "png")
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.error("Error registering user:", error);
-      });
+    userDao.register(
+      "Daisy",
+      "Princess",
+      "@daisy",
+      "password",
+      base64Image,
+      "png"
+    );
   })
   .catch((error) => {
     console.error("Error encoding image:", error);
@@ -96,14 +96,14 @@ encodeImageToBase64(daisyImage)
 const toadImage = "./test_images/toad.png";
 encodeImageToBase64(toadImage)
   .then((base64Image) => {
-    userDao
-      .register("Toad", "Mushroom", "@toad", "password", base64Image, "png")
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.error("Error registering user:", error);
-      });
+    userDao.register(
+      "Toad",
+      "Mushroom",
+      "@toad",
+      "password",
+      base64Image,
+      "png"
+    );
   })
   .catch((error) => {
     console.error("Error encoding image:", error);

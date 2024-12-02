@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dist": "npm run build && cd dist && zip -r ../dist.zip daos model lambda && cd .. && ./uploadLambdas.sh",
     "build": "npm run compile",
     "compile": "npm run clean && tsc",
     "clean": "rimraf dist"

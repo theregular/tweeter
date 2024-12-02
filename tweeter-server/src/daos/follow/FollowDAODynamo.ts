@@ -70,7 +70,7 @@ export class FollowDAODynamo implements IFollowDAO {
           alias: item.alias,
           firstName: item.first_name,
           lastName: item.last_name,
-          // Add other UserDto properties here
+          imageUrl: item.image_url,
         } as UserDto;
       }
     );
@@ -129,7 +129,7 @@ export class FollowDAODynamo implements IFollowDAO {
           alias: item.alias,
           firstName: item.first_name,
           lastName: item.last_name,
-          // Add other UserDto properties here
+          imageUrl: item.image_url,
         } as UserDto;
       }
     );
