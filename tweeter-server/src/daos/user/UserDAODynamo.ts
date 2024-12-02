@@ -13,6 +13,9 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { FileDAOS3 } from "../file/FileDAOS3";
 
+const saltRounds = 10;
+const bcrypt = require("bcryptjs");
+
 export class UserDAODynamo implements IUserDAO {
   readonly userTableName = "user";
   readonly authTableName = "auth";
@@ -41,12 +44,17 @@ export class UserDAODynamo implements IUserDAO {
     // S3DAO automatically handles images as png when uploaded.
     imageFileExtension: string
   ): Promise<[UserDto, AuthTokenDto]> {
-    //add alias and password to auth table
+    //hash password
+
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    //add alias and hashed password to auth table
     const authCommand = {
       TableName: this.authTableName,
       Item: {
         [this.alias]: alias,
-        [this.password]: password,
+        [this.password]: hashedPassword,
       },
     };
 
@@ -101,7 +109,7 @@ export class UserDAODynamo implements IUserDAO {
 
     if (
       authResult.Item === undefined ||
-      authResult.Item[this.password] !== password
+      bcrypt.compare(password, authResult.Item[this.password]) === false
     ) {
       throw new Error("Invalid alias or password");
     } else {
