@@ -179,6 +179,20 @@ export class UserDAODynamo implements IUserDAO {
     }
   }
 
+  async deleteAuthTable() {
+    try {
+      const params = {
+        TableName: this.authTableName,
+      };
+
+      await this.client.send(new DeleteTableCommand(params));
+      console.log(this.authTableName + " table deleted");
+    } catch (error) {
+      console.error("Error creating table:", error);
+      throw new Error(`Failed to delete table ${this.authTableName}`);
+    }
+  }
+
   async createUserTable() {
     try {
       const command = new CreateTableCommand({
@@ -201,6 +215,31 @@ export class UserDAODynamo implements IUserDAO {
     } catch (error) {
       console.error("Error creating table:", error);
       throw new Error(`Failed to create table ${this.userTableName}`);
+    }
+  }
+
+  async createAuthTable() {
+    try {
+      const command = new CreateTableCommand({
+        TableName: this.authTableName,
+        AttributeDefinitions: [
+          { AttributeName: this.alias, AttributeType: "S" }, // String
+        ],
+        KeySchema: [
+          { AttributeName: this.alias, KeyType: "HASH" }, // Partition Key
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 3,
+          WriteCapacityUnits: 3,
+        },
+        BillingMode: "PROVISIONED",
+      });
+
+      await this.client.send(command);
+      console.log(this.authTableName + " table created");
+    } catch (error) {
+      console.error("Error creating table:", error);
+      throw new Error(`Failed to create table ${this.authTableName}`);
     }
   }
 }

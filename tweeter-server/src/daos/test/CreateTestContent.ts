@@ -1,15 +1,15 @@
+import { UserDto } from "tweeter-shared/src";
 import { FollowDAODynamo } from "../follow/FollowDAODynamo";
 import { StatusDAODynamo } from "../status/StatusDAODynamo";
 import { UserDAODynamo } from "../user/UserDAODynamo";
 import fs from "fs";
-import { Type } from "tweeter-shared";
+import { StatusDto, Type } from "tweeter-shared";
 
 const userDao = new UserDAODynamo();
 const followDao = new FollowDAODynamo();
 const statusDao = new StatusDAODynamo();
 
-//helper functions
-
+// Helper functions
 function encodeImageToBase64(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, (err, data) => {
@@ -22,102 +22,411 @@ function encodeImageToBase64(filePath: string): Promise<string> {
   });
 }
 
-//create users for testing
+// Create users for testing
+async function createUsers() {
+  const imagePath = "./src/daos/test/test_images/";
 
-//mario
-const marioImage = "./test_images/mario.png";
-encodeImageToBase64(marioImage)
-  .then((base64Image) => {
-    userDao.register(
-      "Mario",
-      "Toadstool",
-      "@mario",
-      "password",
-      base64Image,
-      "png"
-    );
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+  const users = [
+    {
+      firstName: "Mario",
+      lastName: "Toadstool",
+      alias: "@mario",
+      image: "mario.png",
+    },
+    {
+      firstName: "Luigi",
+      lastName: "ToadStool",
+      alias: "@luigi",
+      image: "luigi.png",
+    },
+    {
+      firstName: "Peach",
+      lastName: "Princess",
+      alias: "@peach",
+      image: "peach.png",
+    },
+    {
+      firstName: "Daisy",
+      lastName: "Princess",
+      alias: "@daisy",
+      image: "daisy.png",
+    },
+    {
+      firstName: "Toad",
+      lastName: "Mushroom",
+      alias: "@toad",
+      image: "toad.png",
+    },
+  ];
 
-//luigi
-const luigiImage = "./test_images/luigi.png";
-encodeImageToBase64(luigiImage)
-  .then((base64Image) => {
-    userDao.register(
-      "Luigi",
-      "Mario",
-      "@luigi",
-      "password",
-      base64Image,
-      "png"
-    );
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+  for (const user of users) {
+    const imagePathFull = imagePath + user.image;
+    try {
+      const base64Image = await encodeImageToBase64(imagePathFull);
+      await userDao.register(
+        user.firstName,
+        user.lastName,
+        user.alias,
+        "password",
+        base64Image,
+        "png"
+      );
+    } catch (error) {
+      console.error(`Error encoding image for ${user.alias}:`, error);
+    }
+  }
+}
 
-//peach
-const peachImage = "./test_images/peach.png";
-encodeImageToBase64(peachImage)
-  .then((base64Image) => {
-    userDao.register(
-      "Peach",
-      "Princess",
-      "@peach",
-      "password",
-      base64Image,
-      "png"
-    );
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+// Add follow relationships for testing
+async function addFollowRelationships() {
+  const followPairs = [
+    ["@mario", "@luigi"],
+    ["@mario", "@peach"],
+    ["@mario", "@daisy"],
+    ["@mario", "@toad"],
+    ["@luigi", "@mario"],
+    ["@luigi", "@peach"],
+    ["@peach", "@daisy"],
+    ["@daisy", "@mario"],
+    ["@daisy", "@toad"],
+    ["@toad", "@mario"],
+  ];
 
-//daisy
-const daisyImage = "./test_images/daisy.png";
-encodeImageToBase64(daisyImage)
-  .then((base64Image) => {
-    userDao.register(
-      "Daisy",
-      "Princess",
-      "@daisy",
-      "password",
-      base64Image,
-      "png"
-    );
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+  for (const [follower, followee] of followPairs) {
+    try {
+      await followDao.follow(
+        { token: "token", timestamp: 0 },
+        follower,
+        followee
+      );
+    } catch (error) {
+      console.error(
+        `Error adding follow relationship from ${follower} to ${followee}:`,
+        error
+      );
+    }
+  }
+}
 
-//toad
-const toadImage = "./test_images/toad.png";
-encodeImageToBase64(toadImage)
-  .then((base64Image) => {
-    userDao.register(
-      "Toad",
-      "Mushroom",
-      "@toad",
-      "password",
-      base64Image,
-      "png"
-    );
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+// Create statuses for testing
+async function createStatuses() {
+  const users: (keyof typeof statuses)[] = [
+    "@mario",
+    "@luigi",
+    "@peach",
+    "@daisy",
+    "@toad",
+  ];
+  const statuses: {
+    [key: string]: {
+      post: string;
+      segments: {
+        text: string;
+        startPosition: number;
+        endPosition: number;
+        type: Type;
+      }[];
+    }[];
+  } = {
+    "@mario": [
+      {
+        post: "It's a me, Mario!",
+        segments: [
+          {
+            text: "It's a me, Mario!",
+            startPosition: 0,
+            endPosition: 16,
+            type: Type.text,
+          },
+        ],
+      },
+      {
+        post: "Post 0 0\n        My friend @luigi likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+        segments: [
+          {
+            text: "Post 0 0\n        My friend ",
+            startPosition: 0,
+            endPosition: 28,
+            type: Type.text,
+          },
+          {
+            text: "@luigi",
+            startPosition: 28,
+            endPosition: 34,
+            type: Type.alias,
+          },
+          {
+            text: " likes this website: ",
+            startPosition: 34,
+            endPosition: 56,
+            type: Type.text,
+          },
+          {
+            text: "http://byu.edu",
+            startPosition: 56,
+            endPosition: 69,
+            type: Type.url,
+          },
+          {
+            text: ". Do you? \n        Or do you prefer this one: ",
+            startPosition: 69,
+            endPosition: 105,
+            type: Type.text,
+          },
+          {
+            text: "http://cs.byu.edu",
+            startPosition: 105,
+            endPosition: 120,
+            type: Type.url,
+          },
+          { text: "?", startPosition: 120, endPosition: 121, type: Type.text },
+        ],
+      },
+    ],
+    "@luigi": [
+      {
+        post: "Green is the best color!",
+        segments: [
+          {
+            text: "Green is the best color!",
+            startPosition: 0,
+            endPosition: 23,
+            type: Type.text,
+          },
+        ],
+      },
+      {
+        post: "Post 0 0\n        My friend @mario likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+        segments: [
+          {
+            text: "Post 0 0\n        My friend ",
+            startPosition: 0,
+            endPosition: 28,
+            type: Type.text,
+          },
+          {
+            text: "@mario",
+            startPosition: 28,
+            endPosition: 34,
+            type: Type.alias,
+          },
+          {
+            text: " likes this website: ",
+            startPosition: 34,
+            endPosition: 56,
+            type: Type.text,
+          },
+          {
+            text: "http://byu.edu",
+            startPosition: 56,
+            endPosition: 69,
+            type: Type.url,
+          },
+          {
+            text: ". Do you? \n        Or do you prefer this one: ",
+            startPosition: 69,
+            endPosition: 105,
+            type: Type.text,
+          },
+          {
+            text: "http://cs.byu.edu",
+            startPosition: 105,
+            endPosition: 120,
+            type: Type.url,
+          },
+          { text: "?", startPosition: 120, endPosition: 121, type: Type.text },
+        ],
+      },
+    ],
+    "@peach": [
+      {
+        post: "I love cake",
+        segments: [
+          {
+            text: "I love cake",
+            startPosition: 0,
+            endPosition: 11,
+            type: Type.text,
+          },
+        ],
+      },
+      {
+        post: "Post 0 0\n        My friend @daisy likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+        segments: [
+          {
+            text: "Post 0 0\n        My friend ",
+            startPosition: 0,
+            endPosition: 28,
+            type: Type.text,
+          },
+          {
+            text: "@daisy",
+            startPosition: 28,
+            endPosition: 35,
+            type: Type.alias,
+          },
+          {
+            text: " likes this website: ",
+            startPosition: 35,
+            endPosition: 57,
+            type: Type.text,
+          },
+          {
+            text: "http://byu.edu",
+            startPosition: 57,
+            endPosition: 70,
+            type: Type.url,
+          },
+          {
+            text: ". Do you? \n        Or do you prefer this one: ",
+            startPosition: 70,
+            endPosition: 106,
+            type: Type.text,
+          },
+          {
+            text: "http://cs.byu.edu",
+            startPosition: 106,
+            endPosition: 121,
+            type: Type.url,
+          },
+          { text: "?", startPosition: 121, endPosition: 122, type: Type.text },
+        ],
+      },
+    ],
+    "@daisy": [
+      {
+        post: "I love flowers",
+        segments: [
+          {
+            text: "I love flowers",
+            startPosition: 0,
+            endPosition: 13,
+            type: Type.text,
+          },
+        ],
+      },
+      {
+        post: "Post 0 0\n        My friend @peach likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+        segments: [
+          {
+            text: "Post 0 0\n        My friend ",
+            startPosition: 0,
+            endPosition: 28,
+            type: Type.text,
+          },
+          {
+            text: "@peach",
+            startPosition: 28,
+            endPosition: 34,
+            type: Type.alias,
+          },
+          {
+            text: " likes this website: ",
+            startPosition: 34,
+            endPosition: 56,
+            type: Type.text,
+          },
+          {
+            text: "http://byu.edu",
+            startPosition: 56,
+            endPosition: 69,
+            type: Type.url,
+          },
+          {
+            text: ". Do you? \n        Or do you prefer this one: ",
+            startPosition: 69,
+            endPosition: 105,
+            type: Type.text,
+          },
+          {
+            text: "http://cs.byu.edu",
+            startPosition: 105,
+            endPosition: 120,
+            type: Type.url,
+          },
+          { text: "?", startPosition: 120, endPosition: 121, type: Type.text },
+        ],
+      },
+    ],
+    "@toad": [
+      {
+        post: "I love mushrooms",
+        segments: [
+          {
+            text: "I love mushrooms",
+            startPosition: 0,
+            endPosition: 15,
+            type: Type.text,
+          },
+        ],
+      },
+      {
+        post: "Post 0 0\n        My friend @mario likes this website: http://byu.edu. Do you? \n        Or do you prefer this one: http://cs.byu.edu?",
+        segments: [
+          {
+            text: "Post 0 0\n        My friend ",
+            startPosition: 0,
+            endPosition: 28,
+            type: Type.text,
+          },
+          {
+            text: "@mario",
+            startPosition: 28,
+            endPosition: 34,
+            type: Type.alias,
+          },
+          {
+            text: " likes this website: ",
+            startPosition: 34,
+            endPosition: 56,
+            type: Type.text,
+          },
+          {
+            text: "http://byu.edu",
+            startPosition: 56,
+            endPosition: 69,
+            type: Type.url,
+          },
+          {
+            text: ". Do you? \n        Or do you prefer this one: ",
+            startPosition: 69,
+            endPosition: 105,
+            type: Type.text,
+          },
+          {
+            text: "http://cs.byu.edu",
+            startPosition: 105,
+            endPosition: 120,
+            type: Type.url,
+          },
+          { text: "?", startPosition: 120, endPosition: 121, type: Type.text },
+        ],
+      },
+    ],
+  };
 
-//add follow relationships for testing
-//TODO: add proper authtoken generation and handling
-followDao.follow({ token: "token", timestamp: 0 }, "@mario", "@luigi");
-followDao.follow({ token: "token", timestamp: 0 }, "@mario", "@peach");
-followDao.follow({ token: "token", timestamp: 0 }, "@mario", "@daisy");
-followDao.follow({ token: "token", timestamp: 0 }, "@mario", "@toad");
-followDao.follow({ token: "token", timestamp: 0 }, "@luigi", "@mario");
-followDao.follow({ token: "token", timestamp: 0 }, "@luigi", "@peach");
-followDao.follow({ token: "token", timestamp: 0 }, "@peach", "@daisy");
-followDao.follow({ token: "token", timestamp: 0 }, "@daisy", "@mario");
-followDao.follow({ token: "token", timestamp: 0 }, "@daisy", "@toad");
-followDao.follow({ token: "token", timestamp: 0 }, "@toad", "@mario");
+  for (const alias of users) {
+    try {
+      const user = await userDao.getUser(
+        { token: "token", timestamp: 0 },
+        alias as string
+      );
+      for (const status of statuses[alias]) {
+        await statusDao.postStatus(
+          { token: "token", timestamp: 0 },
+          { ...status, user, timestamp: Date.now() }
+        );
+      }
+    } catch (error) {
+      console.error(`Error creating statuses for ${alias}:`, error);
+    }
+  }
+}
+
+async function runTests() {
+  await createUsers();
+  await addFollowRelationships();
+  await createStatuses();
+}
+
+runTests();

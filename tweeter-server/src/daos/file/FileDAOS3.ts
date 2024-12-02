@@ -67,7 +67,7 @@ export class FileDAOS3 {
 
       await this.client.send(new DeleteObjectsCommand(deleteParams));
       console.log(
-        "All files in the" + this.FOLDER + " folder have been deleted."
+        "All files in the " + this.FOLDER + " folder have been deleted."
       );
     } catch (error) {
       throw new Error("S3 delete all failed with: " + error);

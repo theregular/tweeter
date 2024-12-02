@@ -153,10 +153,7 @@ export class StatusDAODynamo implements IStatusDAO {
     });
     try {
       const result = await this.client.send(command);
-      console.log(
-        this.storyTableName + " table creation initiated:",
-        result.TableDescription?.TableName
-      );
+      console.log(this.storyTableName + " table created");
     } catch (error) {
       console.error("Error creating table:", error);
     }
@@ -181,10 +178,7 @@ export class StatusDAODynamo implements IStatusDAO {
     });
     try {
       const result = await this.client.send(command);
-      console.log(
-        this.storyTableName + " table creation initiated:",
-        result.TableDescription?.TableName
-      );
+      console.log(this.feedTableName + " table created");
     } catch (error) {
       console.error("Error creating table:", error);
     }
