@@ -18,7 +18,7 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
     this.service = new UserService();
   }
 
-  async setIsFollowerStatus(
+  async getIsFollowerStatus(
     authToken: AuthToken,
     currentUser: User,
     displayedUser: User
@@ -34,31 +34,34 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
         );
       }
     }, "determine follower status");
+    return this.isFollower;
   }
 
-  async setNumbFollowees(authToken: AuthToken, displayedUser: User) {
+  async getNumbFollowees(authToken: AuthToken, displayedUser: User) {
     await this.doFailureReportingOperation(async () => {
       this.followeeCount = await this.service.getFolloweeCount(
         authToken,
         displayedUser
       );
     }, "get followees count");
+    return this.followeeCount;
   }
 
-  async setNumbFollowers(authToken: AuthToken, displayedUser: User) {
+  async getNumbFollowers(authToken: AuthToken, displayedUser: User) {
     await this.doFailureReportingOperation(async () => {
       this.followeeCount = await this.service.getFollowerCount(
         authToken,
         displayedUser
       );
     }, "get followers count");
+    return this.followerCount;
   }
 
   async followDisplayedUser(
     authToken: AuthToken,
     displayedUser: User,
     event: React.MouseEvent
-  ): Promise<void> {
+  ) {
     event.preventDefault();
 
     await this.doFailureReportingOperation(
@@ -81,13 +84,14 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
       "follow user",
       this.view.clearLastInfoMessage
     );
+    return [this.followerCount, this.followeeCount];
   }
 
   async unfollowDisplayedUser(
     authToken: AuthToken,
     displayedUser: User,
     event: React.MouseEvent
-  ): Promise<void> {
+  ) {
     event.preventDefault();
     await this.doFailureReportingOperation(
       async () => {
@@ -109,5 +113,6 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
       "unfollow user",
       this.view.clearLastInfoMessage
     );
+    return [this.followerCount, this.followeeCount];
   }
 }

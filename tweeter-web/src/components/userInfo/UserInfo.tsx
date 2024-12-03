@@ -31,11 +31,29 @@ const UserInfo = () => {
   };
 
   const [presenter] = useState(new UserInfoPresenter(listener));
+  const [isFollower, setIsFollower] = useState(false);
+  const [followeeCount, setFolloweeCount] = useState(-1);
+  const [followerCount, setFollowerCount] = useState(-1);
 
   useEffect(() => {
-    presenter.setIsFollowerStatus(authToken!, currentUser!, displayedUser!);
-    presenter.setNumbFollowees(authToken!, displayedUser!);
-    presenter.setNumbFollowers(authToken!, displayedUser!);
+    const updateUserInfo = async () => {
+      setIsFollower(
+        await presenter.getIsFollowerStatus(
+          authToken!,
+          currentUser!,
+          displayedUser!
+        )
+      );
+
+      setFolloweeCount(
+        await presenter.getNumbFollowees(authToken!, displayedUser!)
+      );
+
+      setFollowerCount(
+        await presenter.getNumbFollowers(authToken!, displayedUser!)
+      );
+    };
+    updateUserInfo();
   }, [displayedUser]);
 
   const switchToLoggedInUser = (event: React.MouseEvent): void => {
@@ -75,29 +93,32 @@ const UserInfo = () => {
               </h2>
               <h3>{displayedUser.alias}</h3>
               <br />
-              {presenter.followeeCount > -1 && presenter.followerCount > -1 && (
+              {followeeCount > -1 && followerCount > -1 && (
                 <div>
-                  Followees: {presenter.followeeCount} Followers:{" "}
-                  {presenter.followerCount}
+                  Followees: {followeeCount} Followers: {followerCount}
                 </div>
               )}
             </div>
             <form>
               {displayedUser !== currentUser && (
                 <div className="form-group">
-                  {presenter.isFollower ? (
+                  {isFollower ? (
                     <button
                       id="unFollowButton"
                       className="btn btn-md btn-secondary me-1"
                       type="submit"
                       style={{ width: "6em" }}
-                      onClick={(event) =>
-                        presenter.unfollowDisplayedUser(
-                          authToken,
-                          displayedUser,
-                          event
-                        )
-                      }
+                      onClick={async (event) => {
+                        const [newFollowerCount, newFolloweeCount] =
+                          await presenter.unfollowDisplayedUser(
+                            authToken,
+                            displayedUser,
+                            event
+                          );
+                        setIsFollower(false);
+                        setFollowerCount(newFollowerCount);
+                        setFolloweeCount(newFolloweeCount);
+                      }}
                     >
                       {presenter.isLoading ? (
                         <span
@@ -115,13 +136,17 @@ const UserInfo = () => {
                       className="btn btn-md btn-primary me-1"
                       type="submit"
                       style={{ width: "6em" }}
-                      onClick={(event) =>
-                        presenter.followDisplayedUser(
-                          authToken,
-                          displayedUser,
-                          event
-                        )
-                      }
+                      onClick={async (event) => {
+                        const [newFollowerCount, newFolloweeCount] =
+                          await presenter.followDisplayedUser(
+                            authToken,
+                            displayedUser,
+                            event
+                          );
+                        setIsFollower(true);
+                        setFollowerCount(newFollowerCount);
+                        setFolloweeCount(newFolloweeCount);
+                      }}
                     >
                       {presenter.isLoading ? (
                         <span
