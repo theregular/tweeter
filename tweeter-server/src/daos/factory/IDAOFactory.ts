@@ -1,3 +1,4 @@
+import { IAuthDAO } from "../auth/IAuthDAO";
 import { IFileDAO } from "../file/IFileDAO";
 import { IFollowDAO } from "../follow/IFollowDAO";
 import { IStatusDAO } from "../status/IStatusDAO";
@@ -8,4 +9,5 @@ export interface IDAOFactory {
   getFollowDAO(): IFollowDAO;
   getStatusDAO(): IStatusDAO;
   getFileDAO(): IFileDAO;
+  getAuthDAO(): IAuthDAO;
 }

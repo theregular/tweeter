@@ -33,7 +33,6 @@ export class StatusDAODynamo implements IStatusDAO {
   // all statuses posted by users that the given user follows, sorted from newest to oldest.
 
   async getFeedPage(
-    authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: StatusDto | null
@@ -85,7 +84,6 @@ export class StatusDAODynamo implements IStatusDAO {
   // all statuses posted by a given user, sorted from newest to oldest.
 
   async getStoryPage(
-    authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: StatusDto | null
@@ -138,10 +136,7 @@ export class StatusDAODynamo implements IStatusDAO {
   }
 
   // only puts into the story table, because the feed table is updated by the follow dao
-  async postStatus(
-    authToken: AuthTokenDto,
-    newStatus: StatusDto
-  ): Promise<void> {
+  async postStatus(newStatus: StatusDto): Promise<void> {
     const params = {
       TableName: this.storyTableName,
       Item: {
@@ -181,7 +176,7 @@ export class StatusDAODynamo implements IStatusDAO {
     }
   }
 
-  async createStoryTable(): Promise<void> {
+  async createStoryTable(readUnits: number, writeUnits: number): Promise<void> {
     const command = new CreateTableCommand({
       TableName: this.storyTableName,
       AttributeDefinitions: [
@@ -193,8 +188,8 @@ export class StatusDAODynamo implements IStatusDAO {
         { AttributeName: this.timestamp, KeyType: "RANGE" }, // Sort Key
       ],
       ProvisionedThroughput: {
-        ReadCapacityUnits: 3,
-        WriteCapacityUnits: 3,
+        ReadCapacityUnits: readUnits,
+        WriteCapacityUnits: writeUnits,
       },
       BillingMode: "PROVISIONED",
     });
@@ -206,7 +201,7 @@ export class StatusDAODynamo implements IStatusDAO {
     }
   }
 
-  async createFeedTable(): Promise<void> {
+  async createFeedTable(readUnits: number, writeUnits: number): Promise<void> {
     const command = new CreateTableCommand({
       TableName: this.feedTableName,
       AttributeDefinitions: [
@@ -218,8 +213,8 @@ export class StatusDAODynamo implements IStatusDAO {
         { AttributeName: this.timestamp, KeyType: "RANGE" }, // Sort Key
       ],
       ProvisionedThroughput: {
-        ReadCapacityUnits: 3,
-        WriteCapacityUnits: 3,
+        ReadCapacityUnits: readUnits,
+        WriteCapacityUnits: writeUnits,
       },
       BillingMode: "PROVISIONED",
     });

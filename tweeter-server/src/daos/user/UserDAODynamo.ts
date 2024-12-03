@@ -26,7 +26,7 @@ export class UserDAODynamo implements IUserDAO {
   readonly imageUrl = "image_url";
   readonly password = "password";
   readonly authToken = "auth_token";
-  readonly autTokenTimestamp = "auth_token_timestamp";
+  readonly authTokenTimestamp = "auth_token_timestamp";
   readonly indexName = "auth_token_index";
 
   //TODO: find a different way to access the fileDAOS3
@@ -34,7 +34,7 @@ export class UserDAODynamo implements IUserDAO {
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
-  // TODO: handle image uploads other than png?
+  // TODO: handle image uploads other than png? and move to be within userService class
   // TODO: handle errors (invalid alias, duplicate alias, etc.)
   // TODO: implement authtoken generation and handling
 
@@ -46,7 +46,7 @@ export class UserDAODynamo implements IUserDAO {
     userImageBytes: string,
     // S3DAO automatically handles images as png when uploaded.
     imageFileExtension: string
-  ): Promise<[UserDto, AuthTokenDto]> {
+  ): Promise<UserDto> {
     //hash password
 
     const salt = await bcrypt.genSalt(saltRounds);
@@ -63,55 +63,37 @@ export class UserDAODynamo implements IUserDAO {
 
     await this.client.send(new PutCommand(passwordCommand));
 
-    //generate auth token and convert to dto
-    const authToken = AuthToken.Generate().dto;
-
-    //add alias and authtoken to auth table
-    const authCommand = {
-      TableName: this.authTableName,
-      Item: {
-        [this.alias]: alias,
-        [this.authToken]: authToken.token,
-        [this.autTokenTimestamp]: authToken.timestamp,
-      },
-    };
-
-    await this.client.send(new PutCommand(authCommand));
-
     //upload image to S3
-    const imageUrl = await this.fileDAOS3.putImage(
-      alias + "." + imageFileExtension,
-      userImageBytes
-    );
+    try {
+      const imageUrl = await this.fileDAOS3.putImage(
+        alias + "." + imageFileExtension,
+        userImageBytes
+      );
+      //add user info to user table
+      const userCommand = {
+        TableName: this.userTableName,
+        Item: {
+          [this.alias]: alias,
+          [this.firstName]: firstName,
+          [this.lastName]: lastName,
+          [this.imageUrl]: imageUrl,
+        },
+      };
 
-    //add user info to user table
-    const userCommand = {
-      TableName: this.userTableName,
-      Item: {
-        [this.alias]: alias,
-        [this.firstName]: firstName,
-        [this.lastName]: lastName,
-        [this.imageUrl]: imageUrl,
-      },
-    };
+      await this.client.send(new PutCommand(userCommand));
 
-    await this.client.send(new PutCommand(userCommand));
-
-    return [
-      {
-        alias,
-        firstName,
-        lastName,
-        imageUrl,
-      },
-      authToken,
-    ];
+      return {
+        firstName: firstName,
+        lastName: lastName,
+        alias: alias,
+        imageUrl: imageUrl,
+      };
+    } catch (error) {
+      throw new Error("Error uploading image to S3");
+    }
   }
 
-  async login(
-    alias: string,
-    password: string
-  ): Promise<[UserDto, AuthTokenDto]> {
+  async login(alias: string, password: string): Promise<UserDto> {
     //get hashed password from password table
     const passwordCommand = {
       TableName: this.passwordTableName,
@@ -130,28 +112,16 @@ export class UserDAODynamo implements IUserDAO {
       bcrypt.compare(password, passwordResult.Item[this.password]) === false
     ) {
       throw new Error("Invalid alias or password");
-    } else {
-      //if auth is successful, generate auth token and add to auth table and get user info
-      const authToken = AuthToken.Generate().dto;
-      const authCommand = {
-        TableName: this.authTableName,
-        Item: {
-          [this.alias]: alias,
-          [this.authToken]: authToken.token,
-          [this.autTokenTimestamp]: authToken.timestamp,
-        },
-      };
-
-      await this.client.send(new PutCommand(authCommand));
-
-      const user = await this.getUser(authToken, alias);
-
-      return [user, authToken];
     }
+
+    // TODO: move to service class
+    const user = await this.getUser(alias);
+
+    return user;
   }
 
   // TODO: validate auth token
-  async getUser(authToken: AuthTokenDto, alias: string): Promise<UserDto> {
+  async getUser(alias: string): Promise<UserDto> {
     const params = {
       TableName: this.userTableName,
       Key: {
@@ -215,20 +185,6 @@ export class UserDAODynamo implements IUserDAO {
     }
   }
 
-  async deleteAuthTable() {
-    try {
-      const params = {
-        TableName: this.authTableName,
-      };
-
-      await this.client.send(new DeleteTableCommand(params));
-      console.log(this.authTableName + " table deleted");
-    } catch (error) {
-      console.error("Error creating table:", error);
-      throw new Error(`Failed to delete table ${this.authTableName}`);
-    }
-  }
-
   async deletePasswordTable() {
     try {
       const params = {
@@ -243,7 +199,7 @@ export class UserDAODynamo implements IUserDAO {
     }
   }
 
-  async createUserTable() {
+  async createUserTable(readUnits: number, writeUnits: number) {
     try {
       const command = new CreateTableCommand({
         TableName: this.userTableName,
@@ -254,8 +210,8 @@ export class UserDAODynamo implements IUserDAO {
           { AttributeName: this.alias, KeyType: "HASH" }, // Partition Key
         ],
         ProvisionedThroughput: {
-          ReadCapacityUnits: 3,
-          WriteCapacityUnits: 3,
+          ReadCapacityUnits: readUnits,
+          WriteCapacityUnits: writeUnits,
         },
         BillingMode: "PROVISIONED",
       });
@@ -268,32 +224,7 @@ export class UserDAODynamo implements IUserDAO {
     }
   }
 
-  async createAuthTable() {
-    try {
-      const command = new CreateTableCommand({
-        TableName: this.authTableName,
-        KeySchema: [
-          { AttributeName: this.alias, KeyType: "HASH" }, // Partition Key
-        ],
-        AttributeDefinitions: [
-          { AttributeName: this.alias, AttributeType: "S" }, // String
-        ],
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 3,
-          WriteCapacityUnits: 3,
-        },
-        BillingMode: "PROVISIONED",
-      });
-
-      await this.client.send(command);
-      console.log(this.authTableName + " table created");
-    } catch (error) {
-      console.error("Error creating table:", error);
-      throw new Error(`Failed to create table ${this.authTableName}`);
-    }
-  }
-
-  async createPasswordTable() {
+  async createPasswordTable(readUnits: number, writeUnits: number) {
     try {
       const command = new CreateTableCommand({
         TableName: this.passwordTableName,

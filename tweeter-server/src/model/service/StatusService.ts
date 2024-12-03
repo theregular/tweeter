@@ -8,13 +8,13 @@ import {
 import { IDAOFactory } from "../../daos/factory/IDAOFactory";
 import { IStatusDAO } from "../../daos/status/IStatusDAO";
 import { getDaoFactory } from "./getDaoFactory";
+import { Service } from "./Service";
 
-export class StatusService {
-  private daoFactory: IDAOFactory;
+export class StatusService extends Service {
   private statusDAO: IStatusDAO;
 
   constructor() {
-    this.daoFactory = getDaoFactory();
+    super();
     this.statusDAO = this.daoFactory.getStatusDAO();
     // this.followDAO = this.daoFactory.getFollowDAO();
   }
@@ -27,12 +27,13 @@ export class StatusService {
   ): Promise<[StatusDto[], boolean]> {
     // TODO: Replace with the result of calling server
     // return this.getFakeData(lastItem, pageSize);
-    return this.statusDAO.getStoryPage(
-      authToken,
-      userAlias,
-      pageSize,
-      lastItem
-    );
+
+    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    if (isValidAuthtoken === null) {
+      throw new Error("Invalid auth token");
+    }
+
+    return this.statusDAO.getStoryPage(userAlias, pageSize, lastItem);
   }
 
   async loadMoreFeedItems(
@@ -43,15 +44,27 @@ export class StatusService {
   ): Promise<[StatusDto[], boolean]> {
     // TODO: Replace with the result of calling server
     // return this.getFakeData(lastItem, pageSize);
-    return this.statusDAO.getFeedPage(authToken, userAlias, pageSize, lastItem);
+    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    if (isValidAuthtoken === null) {
+      throw new Error("Invalid auth token");
+    }
+
+    return this.statusDAO.getFeedPage(userAlias, pageSize, lastItem);
   }
 
-  async postStatus(token: AuthTokenDto, newStatus: StatusDto): Promise<void> {
+  async postStatus(
+    authToken: AuthTokenDto,
+    newStatus: StatusDto
+  ): Promise<void> {
     // await new Promise((f) => setTimeout(f, 2000));
 
     // TODO: Call the server to post the status
+    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    if (isValidAuthtoken === null) {
+      throw new Error("Invalid auth token");
+    }
 
-    return this.statusDAO.postStatus(token, newStatus);
+    return this.statusDAO.postStatus(newStatus);
   }
 
   // private async getFakeData(

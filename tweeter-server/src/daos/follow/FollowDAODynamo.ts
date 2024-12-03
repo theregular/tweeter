@@ -46,7 +46,6 @@ export class FollowDAODynamo implements IFollowDAO {
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
   async getPageOfFollowees(
-    authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: UserDto | null
@@ -104,7 +103,6 @@ export class FollowDAODynamo implements IFollowDAO {
   }
 
   async getPageOfFollowers(
-    authToken: AuthTokenDto,
     userAlias: string,
     pageSize: number,
     lastItem: UserDto | null
@@ -162,16 +160,13 @@ export class FollowDAODynamo implements IFollowDAO {
     return [followers, lastKey ? true : false];
   }
 
-  async getFollowerCount(
-    token: AuthTokenDto,
-    user: UserDto | null
-  ): Promise<number> {
+  async getFollowerCount(alias: string): Promise<number> {
     const params = {
       TableName: this.followTableName,
       IndexName: this.indexName,
       KeyConditionExpression: `${this.followeeHandle} = :followee_handle`,
       ExpressionAttributeValues: {
-        ":followee_handle": user?.alias,
+        ":followee_handle": alias,
       },
     };
 
@@ -184,15 +179,12 @@ export class FollowDAODynamo implements IFollowDAO {
     return result.Count;
   }
 
-  async getFolloweeCount(
-    token: AuthTokenDto,
-    user: UserDto | null
-  ): Promise<number> {
+  async getFolloweeCount(alias: string): Promise<number> {
     const params = {
       TableName: this.followTableName,
       KeyConditionExpression: `${this.followerHandle} = :follower_handle`,
       ExpressionAttributeValues: {
-        ":follower_handle": user?.alias,
+        ":follower_handle": alias,
       },
     };
 
@@ -206,7 +198,6 @@ export class FollowDAODynamo implements IFollowDAO {
   }
 
   async follow(
-    authToken: AuthTokenDto,
     alias: string,
     toFollowAlias: string
   ): Promise<[followerCount: number, followeeCount: number]> {
@@ -239,7 +230,7 @@ export class FollowDAODynamo implements IFollowDAO {
       };
 
       const storyResult = await this.client.send(new QueryCommand(storyParams));
-      console.log("Story fetched successfully");
+      // console.log("Story fetched successfully");
 
       storyStatuses =
         storyResult.Items?.map((item) => {
@@ -261,7 +252,7 @@ export class FollowDAODynamo implements IFollowDAO {
           } as StatusDto;
         }) || [];
 
-      console.log(storyStatuses);
+      // console.log(storyStatuses);
     } catch (error) {
       console.error("Error fetching story:", error);
     }
@@ -289,14 +280,14 @@ export class FollowDAODynamo implements IFollowDAO {
         };
 
         await this.client.send(new BatchWriteCommand(batchWriteParams));
-        console.log("Feed table updated successfully");
+        // console.log("Feed table updated successfully");
       }
     } catch (error) {
       console.error("Error updating feed table:", error);
     }
 
-    const followerCount = await this.getFollowerCount(authToken, null);
-    const followeeCount = await this.getFolloweeCount(authToken, null);
+    const followerCount = await this.getFollowerCount(alias);
+    const followeeCount = await this.getFolloweeCount(alias);
 
     // const followerCount = 69;
     // const followeeCount = 420;
@@ -305,7 +296,6 @@ export class FollowDAODynamo implements IFollowDAO {
   }
 
   async unfollow(
-    authToken: AuthTokenDto,
     alias: string,
     toUnfollowAlias: string
   ): Promise<[followerCount: number, followeeCount: number]> {
@@ -361,8 +351,8 @@ export class FollowDAODynamo implements IFollowDAO {
       await this.client.send(new BatchWriteCommand(batchWriteParams));
     }
 
-    const followerCount = await this.getFollowerCount(authToken, null);
-    const followeeCount = await this.getFolloweeCount(authToken, null);
+    const followerCount = await this.getFollowerCount(alias);
+    const followeeCount = await this.getFolloweeCount(alias);
 
     // const followerCount = 69;
     // const followeeCount = 420;
@@ -371,7 +361,6 @@ export class FollowDAODynamo implements IFollowDAO {
   }
 
   async getIsFollowerStatus(
-    authToken: AuthTokenDto,
     user: UserDto,
     selectedUser: UserDto
   ): Promise<boolean> {
@@ -400,7 +389,10 @@ export class FollowDAODynamo implements IFollowDAO {
     }
   }
 
-  async createFollowTable(): Promise<void> {
+  async createFollowTable(
+    readUnits: number,
+    writeUnits: number
+  ): Promise<void> {
     const command = new CreateTableCommand({
       TableName: this.followTableName,
       KeySchema: [
@@ -412,8 +404,8 @@ export class FollowDAODynamo implements IFollowDAO {
         { AttributeName: this.followeeHandle, AttributeType: "S" },
       ],
       ProvisionedThroughput: {
-        ReadCapacityUnits: 3,
-        WriteCapacityUnits: 3,
+        ReadCapacityUnits: readUnits,
+        WriteCapacityUnits: writeUnits,
       },
       BillingMode: "PROVISIONED",
       GlobalSecondaryIndexes: [
@@ -427,8 +419,8 @@ export class FollowDAODynamo implements IFollowDAO {
             ProjectionType: "ALL", // Include all attributes in the index
           },
           ProvisionedThroughput: {
-            ReadCapacityUnits: 3, // GSI read capacity
-            WriteCapacityUnits: 3, // GSI write capacity
+            ReadCapacityUnits: readUnits, // GSI read capacity
+            WriteCapacityUnits: writeUnits, // GSI write capacity
           },
         },
       ],

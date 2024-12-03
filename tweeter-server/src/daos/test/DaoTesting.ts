@@ -4,17 +4,20 @@ import { StatusDAODynamo } from "../status/StatusDAODynamo";
 import { Type } from "tweeter-shared";
 import { FileDAOS3 } from "../file/FileDAOS3";
 import fs from "fs";
+import { AuthDAODynamo } from "../auth/AuthDAODynamo";
+import { UserService } from "../../model/service/UserService";
 
 const userDao = new UserDAODynamo();
 const followDao = new FollowDAODynamo();
 const statusDao = new StatusDAODynamo();
 const fileDao = new FileDAOS3();
+const authDao = new AuthDAODynamo();
 
-userDao
-  .register("John", "Doe", "@johndoe", "password", "0", "jpg")
-  .then((result) => {
-    console.log(result);
-  });
+// userDao
+//   .register("John", "Doe", "@johndoe", "password", "0", "jpg")
+//   .then((result) => {
+//     console.log(result);
+//   });
 
 // userDao
 //   .register("Jane", "Smith", "@janesmith", "password", "0", "jpg")
@@ -293,3 +296,53 @@ userDao
 //   .catch((error) => {
 //     console.error("Error encoding image:", error);
 //   });
+
+// authDao.generateAuthToken("@johndoe").then((result) => {
+//   console.log(result);
+// });
+
+// authDao.verifyAuthToken("token").then((result) => {
+//   console.log(result);
+// });
+
+// authDao
+//   .verifyAuthToken("2c57e785-14ac-4a59-b343-83645e7bc190")
+//   .then((result) => {
+//     console.log(result);
+//   });
+
+// authDao
+//   .deleteAuthToken("2c57e785-14ac-4a59-b343-83645e7bc190")
+//   .then((result) => {
+//     console.log(result);
+//   });
+
+// create mario
+
+const userService = new UserService();
+
+const imagePath = "./test_images/mario.png";
+
+function encodeImageToBase64(filePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data.toString("base64"));
+      }
+    });
+  });
+}
+
+encodeImageToBase64(imagePath)
+  .then((base64Image) => {
+    userService
+      .register("Mario", "Mario", "@mario", "password", base64Image, "png")
+      .then((result) => {
+        console.log(result);
+      });
+  })
+  .catch((error) => {
+    console.error("Error encoding image:", error);
+  });

@@ -1,3 +1,6 @@
+import { AuthDAODynamo } from "../auth/AuthDAODynamo";
+import { IAuthDAO } from "../auth/IAuthDAO";
+import { FileDAOS3 } from "../file/FileDAOS3";
 import { IFileDAO } from "../file/IFileDAO";
 import { FollowDAODynamo } from "../follow/FollowDAODynamo";
 import { IFollowDAO } from "../follow/IFollowDAO";
@@ -32,6 +35,10 @@ export class DAOFactoryDynamo implements IDAOFactory {
 
   // TODO: Is this needed?
   getFileDAO(): IFileDAO {
-    throw new Error("Method not implemented.");
+    return new FileDAOS3();
+  }
+
+  getAuthDAO(): IAuthDAO {
+    return new AuthDAODynamo();
   }
 }

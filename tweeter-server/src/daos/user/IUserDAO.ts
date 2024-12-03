@@ -8,11 +8,11 @@ export interface IUserDAO {
     password: string,
     userImageBytes: string,
     imageFileExtension: string
-  ): Promise<[UserDto, AuthTokenDto]>;
+  ): Promise<UserDto>;
 
-  login(alias: string, password: string): Promise<[UserDto, AuthTokenDto]>;
+  login(alias: string, password: string): Promise<UserDto>;
 
-  //logout?
+  //logout? - handle in AuthDAO
 
-  getUser(authToken: AuthTokenDto, alias: string): Promise<UserDto>;
+  getUser(alias: string): Promise<UserDto>;
 }

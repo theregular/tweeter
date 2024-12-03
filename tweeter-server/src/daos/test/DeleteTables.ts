@@ -1,3 +1,4 @@
+import { AuthDAODynamo } from "../auth/AuthDAODynamo";
 import { FileDAOS3 } from "../file/FileDAOS3";
 import { FollowDAODynamo } from "../follow/FollowDAODynamo";
 import { StatusDAODynamo } from "../status/StatusDAODynamo";
@@ -7,6 +8,7 @@ const userDao = new UserDAODynamo();
 const followDao = new FollowDAODynamo();
 const statusDao = new StatusDAODynamo();
 const fileDao = new FileDAOS3();
+const authDao = new AuthDAODynamo();
 
 // Delete content of all tables
 
@@ -18,15 +20,15 @@ try {
 }
 
 try {
-  userDao.deleteAuthTable();
-} catch (error) {
-  console.error("Error deleting Auth Table:", (error as Error).message);
-}
-
-try {
   userDao.deletePasswordTable();
 } catch (error) {
   console.error("Error deleting Password Table:", (error as Error).message);
+}
+
+try {
+  authDao.deleteAuthTable();
+} catch (error) {
+  console.error("Error deleting Auth Table:", (error as Error).message);
 }
 
 try {

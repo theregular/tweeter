@@ -5,18 +5,14 @@ import {
   UserDto,
   AuthTokenDto,
 } from "tweeter-shared";
-import { IDAOFactory } from "../../daos/factory/IDAOFactory";
 import { IFollowDAO } from "../../daos/follow/IFollowDAO";
-import { getDaoFactory } from "./getDaoFactory";
-import { DAOFactoryDynamo } from "../../daos/factory/DAOFactoryDynamo";
+import { Service } from "./Service";
 
-export class FollowService {
-  private daoFactory: IDAOFactory;
+export class FollowService extends Service {
   private followDAO: IFollowDAO;
 
   constructor() {
-    this.daoFactory = getDaoFactory();
-    // this.daoFactory = DAOFactoryDynamo.instance;
+    super();
     this.followDAO = this.daoFactory.getFollowDAO();
   }
 
@@ -29,12 +25,12 @@ export class FollowService {
     // TODO: Replace with the result of calling server
     //return this.getFakeData(lastItem, pageSize, userAlias);
 
-    return this.followDAO.getPageOfFollowers(
-      authToken,
-      userAlias,
-      pageSize,
-      lastItem
-    );
+    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    if (isValidAuthtoken === null) {
+      throw new Error("Invalid auth token");
+    }
+
+    return this.followDAO.getPageOfFollowers(userAlias, pageSize, lastItem);
   }
 
   async loadMoreFollowees(
@@ -45,12 +41,12 @@ export class FollowService {
   ): Promise<[UserDto[], boolean]> {
     // TODO: Replace with the result of calling server
     //return this.getFakeData(lastItem, pageSize, userAlias);
-    return this.followDAO.getPageOfFollowees(
-      authToken,
-      userAlias,
-      pageSize,
-      lastItem
-    );
+
+    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    if (isValidAuthtoken === null) {
+      throw new Error("Invalid auth token");
+    }
+    return this.followDAO.getPageOfFollowees(userAlias, pageSize, lastItem);
   }
 
   // private async getPageOfUsers(

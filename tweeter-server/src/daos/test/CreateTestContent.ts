@@ -1,13 +1,13 @@
-import { UserDto } from "tweeter-shared/src";
-import { FollowDAODynamo } from "../follow/FollowDAODynamo";
-import { StatusDAODynamo } from "../status/StatusDAODynamo";
-import { UserDAODynamo } from "../user/UserDAODynamo";
-import fs from "fs";
-import { StatusDto, Type } from "tweeter-shared";
+import { AuthTokenDto, Type, UserDto } from "tweeter-shared";
+import { FollowService } from "../../model/service/FollowService";
+import { StatusService } from "../../model/service/StatusService";
+import { UserService } from "../../model/service/UserService";
+import fs, { stat } from "fs";
+import { StatusDto } from "tweeter-shared/src";
 
-const userDao = new UserDAODynamo();
-const followDao = new FollowDAODynamo();
-const statusDao = new StatusDAODynamo();
+const userService = new UserService();
+const followService = new FollowService();
+const statusService = new StatusService();
 
 // Helper functions
 function encodeImageToBase64(filePath: string): Promise<string> {
@@ -59,11 +59,13 @@ async function createUsers() {
     },
   ];
 
+  const userDtosAndTokens = [];
+
   for (const user of users) {
     const imagePathFull = imagePath + user.image;
     try {
       const base64Image = await encodeImageToBase64(imagePathFull);
-      await userDao.register(
+      const [userDto, authToken] = await userService.register(
         user.firstName,
         user.lastName,
         user.alias,
@@ -71,45 +73,21 @@ async function createUsers() {
         base64Image,
         "png"
       );
+      userDtosAndTokens.push({ userDto, authToken });
     } catch (error) {
       console.error(`Error encoding image for ${user.alias}:`, error);
     }
   }
+
+  return userDtosAndTokens;
 }
 
-// Add follow relationships for testing
-async function addFollowRelationships() {
-  const followPairs = [
-    ["@mario", "@luigi"],
-    ["@mario", "@peach"],
-    ["@mario", "@daisy"],
-    ["@mario", "@toad"],
-    ["@luigi", "@mario"],
-    ["@luigi", "@peach"],
-    ["@peach", "@daisy"],
-    ["@daisy", "@mario"],
-    ["@daisy", "@toad"],
-    ["@toad", "@mario"],
-  ];
-
-  for (const [follower, followee] of followPairs) {
-    try {
-      await followDao.follow(
-        { token: "token", timestamp: 0 },
-        follower,
-        followee
-      );
-    } catch (error) {
-      console.error(
-        `Error adding follow relationship from ${follower} to ${followee}:`,
-        error
-      );
-    }
-  }
-}
-
-// Create statuses for testing
-async function createStatuses() {
+async function createStatuses(
+  userDtosAndTokens: {
+    userDto: UserDto;
+    authToken: AuthTokenDto;
+  }[]
+) {
   const users: (keyof typeof statuses)[] = [
     "@mario",
     "@luigi",
@@ -407,15 +385,19 @@ async function createStatuses() {
 
   for (const alias of users) {
     try {
-      const user = await userDao.getUser(
-        { token: "token", timestamp: 0 },
-        alias as string
+      const user = userDtosAndTokens.find(
+        (userDtoAndToken) => userDtoAndToken.userDto.alias === alias
       );
+      if (user === undefined) {
+        throw new Error(`User ${alias} not found`);
+      }
       for (const status of statuses[alias]) {
-        await statusDao.postStatus(
-          { token: "token", timestamp: 0 },
-          { ...status, user, timestamp: Date.now() }
-        );
+        await statusService.postStatus(user.authToken, {
+          post: status.post,
+          user: user.userDto,
+          timestamp: Date.now(),
+          segments: status.segments,
+        });
       }
     } catch (error) {
       console.error(`Error creating statuses for ${alias}:`, error);
@@ -423,10 +405,53 @@ async function createStatuses() {
   }
 }
 
+// Add follow relationships for testing
+async function addFollowRelationships(
+  userDtosAndTokens: {
+    userDto: UserDto;
+    authToken: AuthTokenDto;
+  }[]
+) {
+  const followPairs = [
+    ["@mario", "@luigi"],
+    ["@mario", "@peach"],
+    ["@mario", "@daisy"],
+    ["@mario", "@toad"],
+    ["@luigi", "@mario"],
+    ["@luigi", "@peach"],
+    ["@peach", "@daisy"],
+    ["@daisy", "@mario"],
+    ["@daisy", "@toad"],
+    ["@toad", "@mario"],
+  ];
+
+  for (const [follower, followee] of followPairs) {
+    try {
+      const user = userDtosAndTokens.find(
+        (userDtoAndToken) => userDtoAndToken.userDto.alias === follower
+      );
+      if (user === undefined) {
+        throw new Error(`User ${follower} not found`);
+      }
+
+      const userToFollow = await userService.getUser(user.authToken, followee);
+      if (userToFollow === null) {
+        throw new Error("Could not find user to follow");
+      }
+      await userService.follow(user.authToken, userToFollow);
+    } catch (error) {
+      console.error(
+        `Error adding follow relationship from ${follower} to ${followee}:`,
+        error
+      );
+    }
+  }
+}
+
 async function runTests() {
-  await createUsers();
-  await createStatuses();
-  await addFollowRelationships();
+  const userDtosAndTokens = await createUsers();
+  await createStatuses(userDtosAndTokens);
+  await addFollowRelationships(userDtosAndTokens);
 }
 
 runTests();
