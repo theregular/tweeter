@@ -13,7 +13,6 @@ import {
   Type,
   UserDto,
 } from "tweeter-shared";
-import { UserDAODynamo } from "../user/UserDAODynamo";
 import { IStatusDAO } from "./IStatusDAO";
 export class StatusDAODynamo implements IStatusDAO {
   readonly storyTableName = "story";
@@ -25,8 +24,6 @@ export class StatusDAODynamo implements IStatusDAO {
   readonly post = "post";
   readonly segments = "segments";
   readonly feedTableIndex = "feed_index";
-
-  private userDAO = new UserDAODynamo();
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 

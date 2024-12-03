@@ -5,9 +5,7 @@ import {
   Status,
   StatusDto,
 } from "tweeter-shared";
-import { IDAOFactory } from "../../daos/factory/IDAOFactory";
 import { IStatusDAO } from "../../daos/status/IStatusDAO";
-import { getDaoFactory } from "./getDaoFactory";
 import { Service } from "./Service";
 
 export class StatusService extends Service {
