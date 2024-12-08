@@ -25,7 +25,7 @@ export class FollowService extends Service {
     // TODO: Replace with the result of calling server
     //return this.getFakeData(lastItem, pageSize, userAlias);
 
-    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
     }
@@ -42,7 +42,7 @@ export class FollowService extends Service {
     // TODO: Replace with the result of calling server
     //return this.getFakeData(lastItem, pageSize, userAlias);
 
-    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
     }

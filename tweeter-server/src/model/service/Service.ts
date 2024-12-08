@@ -11,8 +11,8 @@ export abstract class Service {
     this.authDAO = this.daoFactory.getAuthDAO();
   }
 
-  async verifyAuthToken(authToken: AuthTokenDto): Promise<AuthTokenDto | null> {
-    return await this.authDAO.verifyAuthToken(authToken);
+  async getAuthToken(authToken: AuthTokenDto): Promise<AuthTokenDto | null> {
+    return await this.authDAO.getAuthToken(authToken);
   }
 
   async generateAuthToken(alias: string): Promise<AuthTokenDto> {

@@ -29,7 +29,11 @@ const authDao = new AuthDAODynamo();
 //   console.log(result);
 // });
 
-// userDao.login("@johndoe", "password").then((result) => {
+userDao.login("@a", "password1").then((result) => {
+  console.log(result);
+});
+
+// userDao.login("@a", "a").then((result) => {
 //   console.log(result);
 // });
 
@@ -299,50 +303,45 @@ const authDao = new AuthDAODynamo();
 
 // authDao.generateAuthToken("@johndoe").then((result) => {
 //   console.log(result);
+//   authDao.verifyAuthToken(result).then((result) => {
+//     console.log(result);
+//   });
 // });
 
-// authDao.verifyAuthToken("token").then((result) => {
+// authDao.verifyAuthToken({ token: "token", timestamp: 0 }).then((result) => {
 //   console.log(result);
 // });
 
-// authDao
-//   .verifyAuthToken("2c57e785-14ac-4a59-b343-83645e7bc190")
-//   .then((result) => {
-//     console.log(result);
-//   });
-
-// authDao
-//   .deleteAuthToken("2c57e785-14ac-4a59-b343-83645e7bc190")
-//   .then((result) => {
-//     console.log(result);
-//   });
+// authDao.verifyAuthToken(authToken).then((result) => {
+//   console.log(result);
+// });
 
 // create mario
 
-const userService = new UserService();
+// const userService = new UserService();
 
-const imagePath = "./test_images/mario.png";
+// const imagePath = "./test_images/mario.png";
 
-function encodeImageToBase64(filePath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data.toString("base64"));
-      }
-    });
-  });
-}
+// function encodeImageToBase64(filePath: string): Promise<string> {
+//   return new Promise((resolve, reject) => {
+//     fs.readFile(filePath, (err, data) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(data.toString("base64"));
+//       }
+//     });
+//   });
+// }
 
-encodeImageToBase64(imagePath)
-  .then((base64Image) => {
-    userService
-      .register("Mario", "Mario", "@mario", "password", base64Image, "png")
-      .then((result) => {
-        console.log(result);
-      });
-  })
-  .catch((error) => {
-    console.error("Error encoding image:", error);
-  });
+// encodeImageToBase64(imagePath)
+//   .then((base64Image) => {
+//     userService
+//       .register("Mario", "Mario", "@mario", "password", base64Image, "png")
+//       .then((result) => {
+//         console.log(result);
+//       });
+//   })
+//   .catch((error) => {
+//     console.error("Error encoding image:", error);
+//   });

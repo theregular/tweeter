@@ -107,17 +107,22 @@ export class UserDAODynamo implements IUserDAO {
     );
 
     //if no password is found or password is incorrect, throw error
-    if (
-      passwordResult.Item === undefined ||
-      bcrypt.compare(password, passwordResult.Item[this.password]) === false
-    ) {
+    if (passwordResult.Item === undefined) {
       throw new Error("Invalid alias or password");
+    } else {
+      const isMatch = await bcrypt.compare(
+        password,
+        passwordResult.Item[this.password]
+      );
+      if (!isMatch) {
+        throw new Error("Invalid alias or password");
+      }
+      // TODO: move to service class
+      // console.log(passwordResult.Item[this.password]);
+      const user = await this.getUser(alias);
+
+      return user;
     }
-
-    // TODO: move to service class
-    const user = await this.getUser(alias);
-
-    return user;
   }
 
   // TODO: validate auth token
@@ -170,6 +175,8 @@ export class UserDAODynamo implements IUserDAO {
       };
     });
   }
+
+  // TABLE GENERATE AND DELETE FUNCTIONS
 
   async deleteUserTable() {
     try {

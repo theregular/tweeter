@@ -30,7 +30,7 @@ export class UserService extends Service {
     // TODO: Replace with the result of calling server
     // return FakeData.instance.isFollower();
 
-    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
     }
@@ -49,7 +49,7 @@ export class UserService extends Service {
     // TODO: Replace with the result of calling server
     // return FakeData.instance.getFollowerCount(user?.alias ? user?.alias : "");
 
-    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
     }
@@ -69,7 +69,7 @@ export class UserService extends Service {
   ): Promise<number> {
     // TODO: Replace with the result of calling server
 
-    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
     }
@@ -91,15 +91,14 @@ export class UserService extends Service {
 
     if (user === null) {
       throw new Error("Invalid alias or password");
+    } else {
+      const authToken = await this.generateAuthToken(alias);
+      if (authToken === null) {
+        throw new Error("Error generating auth token");
+      }
+
+      return [user, authToken];
     }
-
-    const authToken = await this.generateAuthToken(alias);
-
-    if (authToken === null) {
-      throw new Error("Error generating auth token");
-    }
-
-    return [user, authToken];
   }
 
   //TODO: implement logout
@@ -107,7 +106,7 @@ export class UserService extends Service {
     // Pause so we can see the logging out message. Delete when the call to the server is implemented.
     // await new Promise((res) => setTimeout(res, 1000));
 
-    this.deleteAuthToken(authToken);
+    await this.deleteAuthToken(authToken);
   }
 
   async register(
@@ -155,7 +154,7 @@ export class UserService extends Service {
   ): Promise<UserDto | null> {
     // TODO: Replace with the result of calling server
     // const user: User | null = FakeData.instance.findUserByAlias(alias);
-    const isValidAuthtoken = await this.verifyAuthToken(authToken);
+    const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
     }

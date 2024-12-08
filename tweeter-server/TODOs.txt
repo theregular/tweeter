@@ -2,3 +2,6 @@
 * general code clean up and testing with authtoken 
 
 * change timeout back to 3 seconds on tweeterRegister lambda? (Possibly doing too much in one func)
+
+* LOGIN allows logins even with wrong password
+* REGISTER allows creation of new user even if that alias is already taken

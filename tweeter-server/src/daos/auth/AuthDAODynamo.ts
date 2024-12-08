@@ -4,6 +4,7 @@ import {
   DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
+  GetCommandOutput,
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
 
@@ -14,6 +15,12 @@ import {
 } from "@aws-sdk/client-dynamodb";
 
 const expirationTime = 1000 * 60 * 60; // 1 hour
+
+interface AuthResponse {
+  token: string;
+  timestamp: number;
+  alias: string;
+}
 
 export class AuthDAODynamo implements IAuthDAO {
   readonly authTableName = "auth";
@@ -30,15 +37,17 @@ export class AuthDAODynamo implements IAuthDAO {
     //check if token is expired
 
     const currentTime = Date.now();
+    // console.log("Current time: " + currentTime);
+    // console.log("Token timestamp: " + token.timestamp);
 
-    if (currentTime - token.timestamp > expirationTime) {
-      console.log("Token expired");
-      //delete expired token
-      await this.deleteAuthToken(token);
-      return false;
-    } else {
+    if (currentTime - token.timestamp < expirationTime) {
+      // console.log("Token is not expired");
       return true;
     }
+    //delete expired token
+    console.log("Token is expired");
+    await this.deleteAuthToken(token);
+    return false;
   }
 
   async generateAuthToken(alias: string): Promise<AuthTokenDto> {
@@ -64,7 +73,9 @@ export class AuthDAODynamo implements IAuthDAO {
     return generatedtoken;
   }
 
-  async verifyAuthToken(token: AuthTokenDto): Promise<AuthTokenDto | null> {
+  async getAndVerifyAuthResponse(
+    token: AuthTokenDto
+  ): Promise<AuthResponse | null> {
     //get auth token from table
     const authParams = {
       TableName: this.authTableName,
@@ -76,21 +87,39 @@ export class AuthDAODynamo implements IAuthDAO {
     const authResponse = await this.client.send(new GetCommand(authParams));
 
     if (authResponse.Item === undefined) {
+      console.log("Token not found");
       return null;
     }
 
     //check if token is expired
-
-    const isTokenValid = await this.checkAuthTokenExpiration(token);
+    const isTokenValid = await this.checkAuthTokenExpiration({
+      token: authResponse.Item[this.authToken],
+      timestamp: authResponse.Item[this.authTokenTimestamp],
+    });
 
     if (!isTokenValid) {
+      // console.log("Token is expired");
       return null;
     }
 
     return {
       token: authResponse.Item[this.authToken],
       timestamp: authResponse.Item[this.authTokenTimestamp],
+      alias: authResponse.Item[this.alias],
     };
+  }
+
+  async getAuthToken(token: AuthTokenDto): Promise<AuthTokenDto | null> {
+    //get auth token from table
+    const authResponse = await this.getAndVerifyAuthResponse(token);
+
+    //return auth token dto
+    return authResponse
+      ? {
+          token: authResponse.token,
+          timestamp: authResponse.timestamp,
+        }
+      : null;
   }
 
   async deleteAuthToken(token: AuthTokenDto): Promise<void> {
@@ -110,27 +139,11 @@ export class AuthDAODynamo implements IAuthDAO {
   }
 
   async getAliasFromAuthToken(token: AuthTokenDto): Promise<string | null> {
-    const isTokenValid = await this.checkAuthTokenExpiration(token);
-
-    if (!isTokenValid) {
-      return null;
-    }
-
-    const authParams = {
-      TableName: this.authTableName,
-      Key: {
-        [this.authToken]: token.token,
-      },
-    };
-
-    const authResponse = await this.client.send(new GetCommand(authParams));
-
-    if (authResponse.Item === undefined) {
-      return null;
-    }
-
-    return authResponse.Item[this.alias];
+    const authResponse = await this.getAndVerifyAuthResponse(token);
+    return authResponse ? authResponse.alias : null;
   }
+
+  //TABLE GENERATE AND DELETE FUNCTIONS
 
   async deleteAuthTable() {
     try {
