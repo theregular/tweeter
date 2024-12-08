@@ -1,5 +1,5 @@
-import { DAOFactoryDynamo } from "../../daos/factory/DAOFactoryDynamo";
+import { DAOFactoryAWS } from "../../daos/factory/DAOFactoryAWS";
 
 export function getDaoFactory() {
-  return new DAOFactoryDynamo();
+  return new DAOFactoryAWS();
 }

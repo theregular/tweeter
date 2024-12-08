@@ -7,13 +7,16 @@ import {
 } from "tweeter-shared";
 import { IStatusDAO } from "../../daos/status/IStatusDAO";
 import { Service } from "./Service";
+import { ISQSDAO } from "../../daos/sqs/ISQSDAO";
 
 export class StatusService extends Service {
   private statusDAO: IStatusDAO;
+  private sqsDAO: ISQSDAO;
 
   constructor() {
     super();
     this.statusDAO = this.daoFactory.getStatusDAO();
+    this.sqsDAO = this.daoFactory.getSQSDAO();
   }
 
   async loadMoreStoryItems(
@@ -25,11 +28,7 @@ export class StatusService extends Service {
     // TODO: Replace with the result of calling server
     // return this.getFakeData(lastItem, pageSize);
 
-    const isValidAuthtoken = await this.getAuthToken(authToken);
-    if (isValidAuthtoken === null) {
-      throw new Error("Invalid auth token");
-    }
-
+    await this.validateAuthToken(authToken);
     return this.statusDAO.getStoryPage(userAlias, pageSize, lastItem);
   }
 
@@ -41,10 +40,7 @@ export class StatusService extends Service {
   ): Promise<[StatusDto[], boolean]> {
     // TODO: Replace with the result of calling server
     // return this.getFakeData(lastItem, pageSize);
-    const isValidAuthtoken = await this.getAuthToken(authToken);
-    if (isValidAuthtoken === null) {
-      throw new Error("Invalid auth token");
-    }
+    await this.validateAuthToken(authToken);
 
     return this.statusDAO.getFeedPage(userAlias, pageSize, lastItem);
   }
@@ -55,24 +51,12 @@ export class StatusService extends Service {
   ): Promise<void> {
     // await new Promise((f) => setTimeout(f, 2000));
 
-    // TODO: Call the server to post the status
-    const isValidAuthtoken = await this.getAuthToken(authToken);
-    if (isValidAuthtoken === null) {
-      throw new Error("Invalid auth token");
-    }
+    // validate auth token
+    await this.validateAuthToken(authToken);
 
-    return this.statusDAO.postStatus(newStatus);
+    //send to SQS
+    await this.sqsDAO.postStatus(newStatus);
+    //send to dynamo
+    await this.statusDAO.postStatus(newStatus);
   }
-
-  // private async getFakeData(
-  //   lastItem: StatusDto | null,
-  //   pageSize: number
-  // ): Promise<[StatusDto[], boolean]> {
-  //   const [item, hasMore] = FakeData.instance.getPageOfStatuses(
-  //     Status.fromDto(lastItem),
-  //     pageSize
-  //   );
-  //   const dtos = item.map((status) => status.dto);
-  //   return [dtos, hasMore];
-  // }
 }

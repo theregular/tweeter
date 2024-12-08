@@ -26,4 +26,11 @@ export abstract class Service {
   async getAliasFromAuthToken(authToken: AuthTokenDto): Promise<string | null> {
     return await this.authDAO.getAliasFromAuthToken(authToken);
   }
+
+  async validateAuthToken(authToken: AuthTokenDto): Promise<void> {
+    const isValidAuthtoken = await this.getAuthToken(authToken);
+    if (isValidAuthtoken === null) {
+      throw new Error("Invalid auth token");
+    }
+  }
 }

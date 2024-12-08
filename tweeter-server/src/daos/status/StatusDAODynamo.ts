@@ -132,7 +132,7 @@ export class StatusDAODynamo implements IStatusDAO {
     return [statuses || [], lastKey ? true : false];
   }
 
-  // needs to update FEED and STORY
+  // updates story
   async postStatus(newStatus: StatusDto): Promise<void> {
     const params = {
       TableName: this.storyTableName,
@@ -147,7 +147,7 @@ export class StatusDAODynamo implements IStatusDAO {
     await this.client.send(new PutCommand(params));
   }
 
-  //CREATE/DELETE TABLES
+  // ** CREATE/DELETE TABLES
 
   async deleteStoryTable(): Promise<void> {
     try {
