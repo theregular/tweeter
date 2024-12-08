@@ -1,10 +1,4 @@
-* finish implementing/validating auth token logic 
-    - possibly a parent class with validateToken() func that checks the auth table to see if the token is in the table and not expired
-    - find all the places where the authtoken wasn't being checked and add the logic for checking the auth token
-    - check that auth token is not expired
-
-* logout function
-* follow and unfollow functions after authtoken is finished being implemented
-* general code clean up and testing
+* keep testing logout and login function with authtoken
+* general code clean up and testing with authtoken 
 
 * change timeout back to 3 seconds on tweeterRegister lambda? (Possibly doing too much in one func)
