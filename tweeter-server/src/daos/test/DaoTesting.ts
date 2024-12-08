@@ -6,12 +6,14 @@ import { FileDAOS3 } from "../file/FileDAOS3";
 import fs from "fs";
 import { AuthDAODynamo } from "../auth/AuthDAODynamo";
 import { UserService } from "../../model/service/UserService";
+import { SQSDAOAWS } from "../sqs/SQSDAOAWS";
 
 const userDao = new UserDAODynamo();
 const followDao = new FollowDAODynamo();
 const statusDao = new StatusDAODynamo();
 const fileDao = new FileDAOS3();
 const authDao = new AuthDAODynamo();
+const sqsDao = new SQSDAOAWS();
 
 // userDao
 //   .register("John", "Doe", "@johndoe", "password", "0", "jpg")
@@ -29,9 +31,9 @@ const authDao = new AuthDAODynamo();
 //   console.log(result);
 // });
 
-userDao.login("@a", "password1").then((result) => {
-  console.log(result);
-});
+// userDao.login("@a", "password1").then((result) => {
+//   console.log(result);
+// });
 
 // userDao.login("@a", "a").then((result) => {
 //   console.log(result);
@@ -345,3 +347,26 @@ userDao.login("@a", "password1").then((result) => {
 //   .catch((error) => {
 //     console.error("Error encoding image:", error);
 //   });
+
+sqsDao
+  .postStatus({
+    user: {
+      alias: "@mario",
+      firstName: "Mario",
+      lastName: "Mario",
+      imageUrl: "img",
+    },
+    post: "It's a me, Mario!",
+    timestamp: 0,
+    segments: [
+      {
+        text: "It's a me, Mario!",
+        startPosition: 0,
+        endPosition: 16,
+        type: Type.text,
+      },
+    ],
+  })
+  .then((result) => {
+    console.log(result);
+  });

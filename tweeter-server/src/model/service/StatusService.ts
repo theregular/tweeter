@@ -14,7 +14,6 @@ export class StatusService extends Service {
   constructor() {
     super();
     this.statusDAO = this.daoFactory.getStatusDAO();
-    // this.followDAO = this.daoFactory.getFollowDAO();
   }
 
   async loadMoreStoryItems(

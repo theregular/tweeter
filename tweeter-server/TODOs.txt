@@ -1,7 +1,10 @@
-* keep testing logout and login function with authtoken
 * general code clean up and testing with authtoken 
 
 * change timeout back to 3 seconds on tweeterRegister lambda? (Possibly doing too much in one func)
+* timeout on login lambda also changed to be more than 3 secs
 
-* LOGIN allows logins even with wrong password
+* FIXED - LOGIN allows logins even with wrong password
+
 * REGISTER allows creation of new user even if that alias is already taken
+* problem rendering followers/followees count for users until follow button is clicked
+* clean up DAO dependencies

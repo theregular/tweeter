@@ -132,7 +132,7 @@ export class StatusDAODynamo implements IStatusDAO {
     return [statuses || [], lastKey ? true : false];
   }
 
-  // only puts into the story table, because the feed table is updated by the follow dao
+  // needs to update FEED and STORY
   async postStatus(newStatus: StatusDto): Promise<void> {
     const params = {
       TableName: this.storyTableName,

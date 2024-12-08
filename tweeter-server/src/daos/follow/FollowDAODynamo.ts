@@ -212,14 +212,14 @@ export class FollowDAODynamo implements IFollowDAO {
       };
 
       await this.client.send(new PutCommand(followParams));
-      console.log("Follow relationship updated successfully");
+      // console.log("Follow relationship updated successfully");
     } catch (error) {
       console.error("Error updating follow relationship:", error);
     }
 
     let storyStatuses: StatusDto[] = [];
     try {
-      // get corresponding followed user's posts to from story so we can add them into the feed table
+      // get corresponding followed user's posts from story so we can add them into the feed table
       const storyParams = {
         TableName: this.storyTableName,
         KeyConditionExpression: `${this.alias} = :alias`,
