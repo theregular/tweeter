@@ -57,10 +57,10 @@ export class StatusService extends Service {
     // validate auth token
     await this.validateAuthToken(authToken);
 
-    //send to SQS
-    await this.sqsDAO.postStatus(newStatus);
-    //send to dynamo
+    //send to dynamo (to update user's story)
     await this.statusDAO.postStatus(newStatus);
+    //send to SQS (to update user's followers' feeds)
+    await this.sqsDAO.postStatus(newStatus);
   }
 
   public async sendMessagePostToFeed(status: StatusDto) {

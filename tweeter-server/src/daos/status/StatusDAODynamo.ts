@@ -151,6 +151,28 @@ export class StatusDAODynamo implements IStatusDAO {
     await this.client.send(new PutCommand(params));
   }
 
+  async updateFeeds(status: StatusDto, followers: string[]): Promise<void> {
+    const writeRequests = followers.map((follower) => ({
+      PutRequest: {
+        Item: {
+          [this.alias]: follower,
+          [this.timestamp]: status.timestamp,
+          [this.posterInfo]: status.user,
+          [this.post]: status.post,
+          [this.segments]: status.segments,
+        },
+      },
+    }));
+
+    const params = {
+      RequestItems: {
+        [this.feedTableName]: writeRequests,
+      },
+    };
+
+    await this.client.send(new BatchWriteCommand(params));
+  }
+
   // ** CREATE/DELETE TABLES
 
   async deleteStoryTable(): Promise<void> {
@@ -225,27 +247,5 @@ export class StatusDAODynamo implements IStatusDAO {
     } catch (error) {
       console.error("Error creating table:", error);
     }
-  }
-
-  async updateFeeds(status: StatusDto, followers: string[]): Promise<void> {
-    const writeRequests = followers.map((follower) => ({
-      PutRequest: {
-        Item: {
-          [this.alias]: follower,
-          [this.timestamp]: status.timestamp,
-          [this.posterInfo]: status.user,
-          [this.post]: status.post,
-          [this.segments]: status.segments,
-        },
-      },
-    }));
-
-    const params = {
-      RequestItems: {
-        [this.feedTableName]: writeRequests,
-      },
-    };
-
-    await this.client.send(new BatchWriteCommand(params));
   }
 }
