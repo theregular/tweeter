@@ -6,7 +6,8 @@ export class SQSDAOAWS implements ISQSDAO {
   private readonly client = new SQSClient({ region: "us-west-2" });
   private readonly statusQueueUrl =
     "https://sqs.us-west-2.amazonaws.com/615299743391/tweeter-post-status";
-  private readonly feedQueueUrl = "";
+  private readonly feedQueueUrl =
+    "https://sqs.us-west-2.amazonaws.com/615299743391/tweeter-update-feed";
 
   async postStatus(status: StatusDto): Promise<void> {
     const messageBody = JSON.stringify({

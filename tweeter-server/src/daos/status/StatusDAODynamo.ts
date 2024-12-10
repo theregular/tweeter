@@ -1,4 +1,8 @@
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  BatchWriteCommand,
+  DynamoDBDocumentClient,
+  PutCommand,
+} from "@aws-sdk/lib-dynamodb";
 import {
   CreateTableCommand,
   DeleteTableCommand,
@@ -221,5 +225,27 @@ export class StatusDAODynamo implements IStatusDAO {
     } catch (error) {
       console.error("Error creating table:", error);
     }
+  }
+
+  async updateFeeds(status: StatusDto, followers: string[]): Promise<void> {
+    const writeRequests = followers.map((follower) => ({
+      PutRequest: {
+        Item: {
+          [this.alias]: follower,
+          [this.timestamp]: status.timestamp,
+          [this.posterInfo]: status.user,
+          [this.post]: status.post,
+          [this.segments]: status.segments,
+        },
+      },
+    }));
+
+    const params = {
+      RequestItems: {
+        [this.feedTableName]: writeRequests,
+      },
+    };
+
+    await this.client.send(new BatchWriteCommand(params));
   }
 }

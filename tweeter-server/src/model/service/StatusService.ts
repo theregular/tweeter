@@ -8,15 +8,18 @@ import {
 import { IStatusDAO } from "../../daos/status/IStatusDAO";
 import { Service } from "./Service";
 import { ISQSDAO } from "../../daos/sqs/ISQSDAO";
+import { IFollowDAO } from "../../daos/follow/IFollowDAO";
+import { UserDto } from "tweeter-shared/src";
 
 export class StatusService extends Service {
   private statusDAO: IStatusDAO;
   private sqsDAO: ISQSDAO;
-
+  private followDAO: IFollowDAO;
   constructor() {
     super();
     this.statusDAO = this.daoFactory.getStatusDAO();
     this.sqsDAO = this.daoFactory.getSQSDAO();
+    this.followDAO = this.daoFactory.getFollowDAO();
   }
 
   async loadMoreStoryItems(
@@ -58,5 +61,30 @@ export class StatusService extends Service {
     await this.sqsDAO.postStatus(newStatus);
     //send to dynamo
     await this.statusDAO.postStatus(newStatus);
+  }
+
+  public async sendMessagePostToFeed(status: StatusDto) {
+    // Get followers who need feed updates
+    const alias = status.user.alias;
+    let lastItem: UserDto | null = null;
+    let followers: UserDto[] = [];
+    let hasMore = true;
+    while (hasMore) {
+      [followers, hasMore] = await this.followDAO.getPageOfFollowers(
+        alias,
+        25,
+        lastItem
+      );
+      lastItem = followers[followers.length - 1];
+      // Send to feed queue to update their feeds
+      await this.sqsDAO.updateFeed(
+        status,
+        followers.map((f) => f.alias)
+      );
+    }
+  }
+
+  public async updateFeeds(status: StatusDto, followers: string[]) {
+    await this.statusDAO.updateFeeds(status, followers);
   }
 }

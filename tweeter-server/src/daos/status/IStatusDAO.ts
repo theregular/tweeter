@@ -12,4 +12,6 @@ export interface IStatusDAO {
     lastItem: StatusDto | null
   ): Promise<[StatusDto[], boolean]>;
   postStatus(newStatus: StatusDto): Promise<void>;
+
+  updateFeeds(status: StatusDto, followers: string[]): Promise<void>;
 }
