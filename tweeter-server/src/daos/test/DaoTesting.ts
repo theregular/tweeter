@@ -348,25 +348,10 @@ const sqsDao = new SQSDAOAWS();
 //     console.error("Error encoding image:", error);
 //   });
 
-sqsDao
-  .postStatus({
-    user: {
-      alias: "@mario",
-      firstName: "Mario",
-      lastName: "Mario",
-      imageUrl: "img",
-    },
-    post: "It's a me, Mario!",
-    timestamp: 0,
-    segments: [
-      {
-        text: "It's a me, Mario!",
-        startPosition: 0,
-        endPosition: 16,
-        type: Type.text,
-      },
-    ],
-  })
-  .then((result) => {
-    console.log(result);
-  });
+userDao.updateFolloweeCount("@mario", 1).then((result) => {
+  console.log(result);
+});
+
+userDao.updateFollowerCount("@mario", 600).then((result) => {
+  console.log(result);
+});

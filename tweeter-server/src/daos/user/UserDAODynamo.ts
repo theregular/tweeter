@@ -4,6 +4,7 @@ import {
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
+  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import {
   CreateTableCommand,
@@ -17,20 +18,18 @@ const saltRounds = 10;
 const bcrypt = require("bcryptjs");
 
 export class UserDAODynamo implements IUserDAO {
+  //user table
   readonly userTableName = "user";
-  readonly authTableName = "auth";
-  readonly passwordTableName = "password";
   readonly alias = "alias";
   readonly firstName = "first_name";
   readonly lastName = "last_name";
   readonly imageUrl = "image_url";
-  readonly password = "password";
-  readonly authToken = "auth_token";
-  readonly authTokenTimestamp = "auth_token_timestamp";
-  readonly indexName = "auth_token_index";
+  private readonly followeeCountAttribute = "followee_count";
+  private readonly followerCountAttribute = "follower_count";
 
-  //TODO: find a different way to access the fileDAOS3
-  private fileDAOS3 = new FileDAOS3();
+  //password table
+  readonly passwordTableName = "password";
+  readonly password = "password";
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
@@ -43,9 +42,7 @@ export class UserDAODynamo implements IUserDAO {
     lastName: string,
     alias: string,
     password: string,
-    userImageBytes: string,
-    // S3DAO automatically handles images as png when uploaded.
-    imageFileExtension: string
+    imageUrl: string
   ): Promise<UserDto> {
     //hash password
 
@@ -63,34 +60,28 @@ export class UserDAODynamo implements IUserDAO {
 
     await this.client.send(new PutCommand(passwordCommand));
 
-    //upload image to S3
-    try {
-      const imageUrl = await this.fileDAOS3.putImage(
-        alias + "." + imageFileExtension,
-        userImageBytes
-      );
-      //add user info to user table
-      const userCommand = {
-        TableName: this.userTableName,
-        Item: {
-          [this.alias]: alias,
-          [this.firstName]: firstName,
-          [this.lastName]: lastName,
-          [this.imageUrl]: imageUrl,
-        },
-      };
+    //add user info to user table
+    const userCommand = {
+      TableName: this.userTableName,
+      Item: {
+        [this.alias]: alias,
+        [this.firstName]: firstName,
+        [this.lastName]: lastName,
+        [this.imageUrl]: imageUrl,
+        [this.followeeCountAttribute]: 0,
+        [this.followerCountAttribute]: 0,
+      },
+    };
 
-      await this.client.send(new PutCommand(userCommand));
+    await this.client.send(new PutCommand(userCommand));
 
-      return {
-        firstName: firstName,
-        lastName: lastName,
-        alias: alias,
-        imageUrl: imageUrl,
-      };
-    } catch (error) {
-      throw new Error("Error uploading image to S3");
-    }
+    //return User DTO
+    return {
+      firstName: firstName,
+      lastName: lastName,
+      alias: alias,
+      imageUrl: imageUrl,
+    };
   }
 
   async login(alias: string, password: string): Promise<UserDto> {
@@ -117,15 +108,12 @@ export class UserDAODynamo implements IUserDAO {
       if (!isMatch) {
         throw new Error("Invalid alias or password");
       }
-      // TODO: move to service class
-      // console.log(passwordResult.Item[this.password]);
       const user = await this.getUser(alias);
 
       return user;
     }
   }
 
-  // TODO: validate auth token
   async getUser(alias: string): Promise<UserDto> {
     const params = {
       TableName: this.userTableName,
@@ -174,6 +162,67 @@ export class UserDAODynamo implements IUserDAO {
         imageUrl: item[this.imageUrl]?.S || "",
       };
     });
+  }
+
+  async getFolloweeCount(alias: string): Promise<number> {
+    const params = {
+      TableName: this.userTableName,
+      Key: {
+        [this.alias]: alias,
+      },
+    };
+
+    const result = await this.client.send(new GetCommand(params));
+
+    if (result.Item === undefined) {
+      throw new Error(`No user found with alias ${alias}`);
+    }
+
+    return result.Item[this.followeeCountAttribute];
+  }
+
+  async getFollowerCount(alias: string): Promise<number> {
+    const params = {
+      TableName: this.userTableName,
+      Key: {
+        [this.alias]: alias,
+      },
+    };
+
+    const result = await this.client.send(new GetCommand(params));
+
+    if (result.Item === undefined) {
+      throw new Error(`No user found with alias ${alias}`);
+    }
+
+    return result.Item[this.followerCountAttribute];
+  }
+
+  updateFolloweeCount(alias: string, count: number): Promise<void> {
+    return this.updateCount(alias, this.followeeCountAttribute, count);
+  }
+
+  updateFollowerCount(alias: string, count: number): Promise<void> {
+    return this.updateCount(alias, this.followerCountAttribute, count);
+  }
+
+  private async updateCount(
+    alias: string,
+    attribute: string,
+    count: number
+  ): Promise<void> {
+    const params = {
+      TableName: this.userTableName,
+      Key: {
+        [this.alias]: alias,
+      },
+      UpdateExpression: `ADD ${attribute} :count`,
+      ExpressionAttributeValues: {
+        ":count": count,
+      },
+    };
+
+    await this.client.send(new UpdateCommand(params));
   }
 
   // TABLE GENERATE AND DELETE FUNCTIONS

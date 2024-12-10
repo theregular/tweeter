@@ -22,9 +22,6 @@ export class FollowService extends Service {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
-    // TODO: Replace with the result of calling server
-    //return this.getFakeData(lastItem, pageSize, userAlias);
-
     const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");

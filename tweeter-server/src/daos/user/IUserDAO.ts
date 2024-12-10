@@ -6,13 +6,15 @@ export interface IUserDAO {
     lastName: string,
     alias: string,
     password: string,
-    userImageBytes: string,
-    imageFileExtension: string
+    imageUrl: string
   ): Promise<UserDto>;
 
   login(alias: string, password: string): Promise<UserDto>;
-
-  //logout? - handle in AuthDAO
-
   getUser(alias: string): Promise<UserDto>;
+
+  getFolloweeCount(alias: string): Promise<number>;
+  getFollowerCount(alias: string): Promise<number>;
+
+  updateFolloweeCount(alias: string, count: number): Promise<void>;
+  updateFollowerCount(alias: string, count: number): Promise<void>;
 }

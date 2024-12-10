@@ -2,7 +2,7 @@ import { AuthTokenDto, Type, UserDto } from "tweeter-shared";
 import { FollowService } from "../../model/service/FollowService";
 import { StatusService } from "../../model/service/StatusService";
 import { UserService } from "../../model/service/UserService";
-import fs, { stat } from "fs";
+import fs from "fs";
 import { StatusDto } from "tweeter-shared/src";
 
 const userService = new UserService();

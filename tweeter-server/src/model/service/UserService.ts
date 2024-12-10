@@ -1,9 +1,6 @@
-import { Buffer } from "buffer";
-import { FakeData, User, UserDto } from "tweeter-shared";
+import { UserDto } from "tweeter-shared";
 import { AuthTokenDto } from "tweeter-shared/src";
 import { IUserDAO } from "../../daos/user/IUserDAO";
-import { IDAOFactory } from "../../daos/factory/IDAOFactory";
-import { getDaoFactory } from "./getDaoFactory";
 import { IFollowDAO } from "../../daos/follow/IFollowDAO";
 import { Service } from "./Service";
 import { IFileDAO } from "../../daos/file/IFileDAO";
@@ -46,9 +43,6 @@ export class UserService extends Service {
     authToken: AuthTokenDto,
     user: UserDto | null
   ): Promise<number> {
-    // TODO: Replace with the result of calling server
-    // return FakeData.instance.getFollowerCount(user?.alias ? user?.alias : "");
-
     const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
@@ -57,7 +51,7 @@ export class UserService extends Service {
       return 0;
     }
     try {
-      return this.followDAO.getFollowerCount(user.alias);
+      return this.userDAO.getFollowerCount(user.alias);
     } catch (e) {
       throw new Error("Error getting follower count");
     }
@@ -67,8 +61,6 @@ export class UserService extends Service {
     authToken: AuthTokenDto,
     user: UserDto | null
   ): Promise<number> {
-    // TODO: Replace with the result of calling server
-
     const isValidAuthtoken = await this.getAuthToken(authToken);
     if (isValidAuthtoken === null) {
       throw new Error("Invalid auth token");
@@ -77,7 +69,7 @@ export class UserService extends Service {
       return 0;
     }
     try {
-      return this.followDAO.getFollowerCount(user.alias);
+      return this.userDAO.getFolloweeCount(user.alias);
     } catch (e) {
       throw new Error("Error getting followee count");
     }
@@ -101,11 +93,7 @@ export class UserService extends Service {
     }
   }
 
-  //TODO: implement logout
   async logout(authToken: AuthTokenDto): Promise<void> {
-    // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-    // await new Promise((res) => setTimeout(res, 1000));
-
     await this.deleteAuthToken(authToken);
   }
 
@@ -117,28 +105,30 @@ export class UserService extends Service {
     userImageBytes: string,
     imageFileExtension: string
   ): Promise<[UserDto, AuthTokenDto]> {
-    // Not needed now, but will be needed when you make the request to the server in milestone 3
-    // const imageStringBase64: string =
-    //   Buffer.from(userImageBytes).toString("base64");
+    //upload image to S3
+    const imageUrl = await this.fileDAO.putImage(
+      alias + "." + imageFileExtension,
+      userImageBytes
+    );
 
-    // // TODO: Replace with the result of calling the server
-    // const user = FakeData.instance.firstUser?.dto;
+    if (imageUrl === null) {
+      throw new Error("Error uploading image");
+    }
 
-    // return [user!, FakeData.instance.authToken.dto];
-
+    //add user to user table
     const user = await this.userDAO.register(
       firstName,
       lastName,
       alias,
       password,
-      userImageBytes,
-      imageFileExtension
+      imageUrl
     );
 
     if (user === null) {
       throw new Error("Error registering user");
     }
 
+    //generate auth token and add to auth table
     const authToken = await this.generateAuthToken(alias);
 
     if (authToken === null) {
@@ -166,18 +156,42 @@ export class UserService extends Service {
     authToken: AuthTokenDto,
     userToFollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
-    // Pause so we can see the follow message. Remove when connected to the server
-    // await new Promise((f) => setTimeout(f, 2000));
-
-    // TODO: Call the server
-
     //verify auth token and get user alias from it
     const aliasFromAuthToken = await this.getAliasFromAuthToken(authToken);
     if (aliasFromAuthToken === null) {
       throw new Error("Invalid auth token");
     }
 
-    return await this.followDAO.follow(aliasFromAuthToken, userToFollow.alias);
+    //update follow table
+    try {
+      await this.followDAO.follow(aliasFromAuthToken, userToFollow.alias);
+    } catch (e) {
+      throw new Error("Error following user");
+    }
+
+    //update follower count (of user to follow)
+    try {
+      await this.userDAO.updateFollowerCount(userToFollow.alias, 1);
+    } catch (e) {
+      throw new Error("Error updating follower count");
+    }
+
+    //update followee count (of user who followed)
+    try {
+      await this.userDAO.updateFolloweeCount(aliasFromAuthToken, 1);
+    } catch (e) {
+      throw new Error("Error updating followee count");
+    }
+
+    //get follower and followee count
+    const followerCount = await this.userDAO.getFollowerCount(
+      userToFollow.alias
+    );
+    const followeeCount = await this.userDAO.getFolloweeCount(
+      aliasFromAuthToken
+    );
+
+    return [followerCount, followeeCount];
   }
 
   async unfollow(
@@ -195,9 +209,35 @@ export class UserService extends Service {
       throw new Error("Invalid auth token");
     }
 
-    return await this.followDAO.unfollow(
-      aliasFromAuthToken,
+    //update follow table
+    try {
+      await this.followDAO.unfollow(aliasFromAuthToken, userToUnfollow.alias);
+    } catch (e) {
+      throw new Error("Error unfollowing user");
+    }
+
+    //update follower count (of user to unfollow)
+    try {
+      await this.userDAO.updateFollowerCount(userToUnfollow.alias, -1);
+    } catch (e) {
+      throw new Error("Error updating follower count");
+    }
+
+    //update followee count (of user who unfollowed)
+    try {
+      await this.userDAO.updateFolloweeCount(aliasFromAuthToken, -1);
+    } catch (e) {
+      throw new Error("Error updating followee count");
+    }
+
+    //get follower and followee count
+    const followerCount = await this.userDAO.getFollowerCount(
       userToUnfollow.alias
     );
+    const followeeCount = await this.userDAO.getFolloweeCount(
+      aliasFromAuthToken
+    );
+
+    return [followerCount, followeeCount];
   }
 }

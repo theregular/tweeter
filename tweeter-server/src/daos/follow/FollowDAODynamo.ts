@@ -30,7 +30,6 @@ export class FollowDAODynamo implements IFollowDAO {
   readonly followeeHandle = "followee_handle";
   readonly followerName = "follower_name";
   readonly followeeName = "followee_name";
-  // readonly authToken = "auth_token";
   readonly userTableName = "user";
 
   //story & feed table stuff
@@ -160,47 +159,44 @@ export class FollowDAODynamo implements IFollowDAO {
     return [followers, lastKey ? true : false];
   }
 
-  async getFollowerCount(alias: string): Promise<number> {
-    const params = {
-      TableName: this.followTableName,
-      IndexName: this.indexName,
-      KeyConditionExpression: `${this.followeeHandle} = :followee_handle`,
-      ExpressionAttributeValues: {
-        ":followee_handle": alias,
-      },
-    };
+  // async getFollowerCount(alias: string): Promise<number> {
+  //   const params = {
+  //     TableName: this.followTableName,
+  //     IndexName: this.indexName,
+  //     KeyConditionExpression: `${this.followeeHandle} = :followee_handle`,
+  //     ExpressionAttributeValues: {
+  //       ":followee_handle": alias,
+  //     },
+  //   };
 
-    const result = await this.client.send(new QueryCommand(params));
+  //   const result = await this.client.send(new QueryCommand(params));
 
-    if (result.Count === undefined) {
-      throw new Error("Error getting follower count");
-    }
+  //   if (result.Count === undefined) {
+  //     throw new Error("Error getting follower count");
+  //   }
 
-    return result.Count;
-  }
+  //   return result.Count;
+  // }
 
-  async getFolloweeCount(alias: string): Promise<number> {
-    const params = {
-      TableName: this.followTableName,
-      KeyConditionExpression: `${this.followerHandle} = :follower_handle`,
-      ExpressionAttributeValues: {
-        ":follower_handle": alias,
-      },
-    };
+  // async getFolloweeCount(alias: string): Promise<number> {
+  //   const params = {
+  //     TableName: this.followTableName,
+  //     KeyConditionExpression: `${this.followerHandle} = :follower_handle`,
+  //     ExpressionAttributeValues: {
+  //       ":follower_handle": alias,
+  //     },
+  //   };
 
-    const result = await this.client.send(new QueryCommand(params));
+  //   const result = await this.client.send(new QueryCommand(params));
 
-    if (result.Count === undefined) {
-      throw new Error("Error getting followee count");
-    }
+  //   if (result.Count === undefined) {
+  //     throw new Error("Error getting followee count");
+  //   }
 
-    return result.Count;
-  }
+  //   return result.Count;
+  // }
 
-  async follow(
-    alias: string,
-    toFollowAlias: string
-  ): Promise<[followerCount: number, followeeCount: number]> {
+  async follow(alias: string, toFollowAlias: string): Promise<void> {
     try {
       // update follow relationship
       const followParams = {
@@ -286,19 +282,13 @@ export class FollowDAODynamo implements IFollowDAO {
       console.error("Error updating feed table:", error);
     }
 
-    const followerCount = await this.getFollowerCount(alias);
-    const followeeCount = await this.getFolloweeCount(alias);
+    // const followerCount = await this.getFollowerCount(alias);
+    // const followeeCount = await this.getFolloweeCount(alias);
 
-    // const followerCount = 69;
-    // const followeeCount = 420;
-
-    return [followerCount, followeeCount];
+    // return [followerCount, followeeCount];
   }
 
-  async unfollow(
-    alias: string,
-    toUnfollowAlias: string
-  ): Promise<[followerCount: number, followeeCount: number]> {
+  async unfollow(alias: string, toUnfollowAlias: string): Promise<void> {
     // update follow relationship
     const followParams = {
       TableName: this.followTableName,
@@ -351,13 +341,10 @@ export class FollowDAODynamo implements IFollowDAO {
       await this.client.send(new BatchWriteCommand(batchWriteParams));
     }
 
-    const followerCount = await this.getFollowerCount(alias);
-    const followeeCount = await this.getFolloweeCount(alias);
+    // const followerCount = await this.getFollowerCount(alias);
+    // const followeeCount = await this.getFolloweeCount(alias);
 
-    // const followerCount = 69;
-    // const followeeCount = 420;
-
-    return [followerCount, followeeCount];
+    // return [followerCount, followeeCount];
   }
 
   async getIsFollowerStatus(

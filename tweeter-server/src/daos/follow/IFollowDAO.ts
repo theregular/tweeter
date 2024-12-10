@@ -13,19 +13,9 @@ export interface IFollowDAO {
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]>;
 
-  getFollowerCount(alias: string): Promise<number>;
+  follow(alias: string, toFollowAlias: string): Promise<void>;
 
-  getFolloweeCount(alias: string): Promise<number>;
-
-  follow(
-    alias: string,
-    toFollowAlias: string
-  ): Promise<[followerCount: number, followeeCount: number]>;
-
-  unfollow(
-    alias: string,
-    toFollowAlias: string
-  ): Promise<[followerCount: number, followeeCount: number]>;
+  unfollow(alias: string, toFollowAlias: string): Promise<void>;
 
   getIsFollowerStatus(user: UserDto, selectedUser: UserDto): Promise<boolean>;
 }
