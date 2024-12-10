@@ -36,7 +36,7 @@ export class PostStatusPresenter extends Presenter<PostStatusView> {
     event.preventDefault();
     await this.doFailureReportingOperation(
       async () => {
-        this._isLoading = true;
+        this.isLoading = true;
         this.view.displayInfoMessage("Posting status...", 0);
 
         const status = new Status(post, currentUser!, Date.now());

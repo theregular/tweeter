@@ -4,19 +4,19 @@ export interface View {
 
 export class Presenter<V extends View> {
   private _view: V;
-  public _isLoading = false;
+  public isLoading = false;
 
   protected constructor(view: V) {
     this._view = view;
   }
 
-  public get isLoading() {
-    return this._isLoading;
-  }
+  // public get isLoading() {
+  //   return this._isLoading;
+  // }
 
-  public set isLoading(value: boolean) {
-    this._isLoading = value;
-  }
+  // public set isLoading(value: boolean) {
+  //   this._isLoading = value;
+  // }
 
   protected get view(): V {
     return this._view;

@@ -13,7 +13,8 @@ export class FillUserTableDao {
   //
   // Modify these values as needed to match your user table.
   //
-  private readonly tableName = "user";
+  private readonly userTableName = "user";
+  private readonly passwordTableName = "password";
   private readonly userAliasAttribute = "alias";
   private readonly userFirstNameAttribute = "first_name";
   private readonly userLastNameAttribute = "last_name";
@@ -32,9 +33,15 @@ export class FillUserTableDao {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const params = {
+    const userParams = {
       RequestItems: {
-        [this.tableName]: this.createPutUserRequestItems(
+        [this.userTableName]: this.createPutUserRequestItems(userList),
+      },
+    };
+
+    const passwordParams = {
+      RequestItems: {
+        [this.passwordTableName]: this.createPutPasswordRequestItems(
           userList,
           hashedPassword
         ),
@@ -42,27 +49,58 @@ export class FillUserTableDao {
     };
 
     try {
-      const resp = await this.client.send(new BatchWriteCommand(params));
-      await this.putUnprocessedItems(resp, params);
+      const resp = await this.client.send(new BatchWriteCommand(userParams));
+      await this.putUnprocessedItems(resp, userParams);
     } catch (err) {
       throw new Error(
-        `Error while batch writing users with params: ${params}: \n${err}`
+        `Error while batch writing users with params: ${userParams}: \n${err}`
+      );
+    }
+
+    try {
+      const resp = await this.client.send(
+        new BatchWriteCommand(passwordParams)
+      );
+      await this.putUnprocessedItems(resp, passwordParams);
+    } catch (err) {
+      throw new Error(
+        `Error while batch writing passwords with params: ${passwordParams}: \n${err}`
       );
     }
   }
 
-  private createPutUserRequestItems(userList: User[], hashedPassword: string) {
+  private createPutUserRequestItems(userList: User[]) {
+    return userList.map((user) => this.createPutUserRequest(user));
+  }
+
+  private createPutPasswordRequestItems(
+    userList: User[],
+    hashedPassword: string
+  ) {
     return userList.map((user) =>
-      this.createPutUserRequest(user, hashedPassword)
+      this.createPutPasswordRequest(user, hashedPassword)
     );
   }
 
-  private createPutUserRequest(user: User, hashedPassword: string) {
+  private createPutPasswordRequest(user: User, hashedPassword: string) {
+    const item = {
+      [this.userAliasAttribute]: user.alias,
+      [this.passwordHashAttribute]: hashedPassword,
+    };
+
+    return {
+      PutRequest: {
+        Item: item,
+      },
+    };
+  }
+
+  private createPutUserRequest(user: User) {
     const item = {
       [this.userAliasAttribute]: user.alias,
       [this.userFirstNameAttribute]: user.firstName,
       [this.userLastNameAttribute]: user.lastName,
-      [this.passwordHashAttribute]: hashedPassword,
+      // [this.passwordHashAttribute]: hashedPassword,
       [this.userImageUrlAttribute]: user.imageUrl,
       [this.followerCountAttribute]: 0,
       [this.followeeCountAttribute]: 1,
@@ -111,7 +149,7 @@ export class FillUserTableDao {
 
   async increaseFollowersCount(alias: string, count: number) {
     const params = {
-      TableName: this.tableName,
+      TableName: this.userTableName,
       Key: { [this.userAliasAttribute]: alias },
       ExpressionAttributeValues: { ":inc": count },
       UpdateExpression:
