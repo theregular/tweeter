@@ -18,4 +18,6 @@ export interface IFollowDAO {
   unfollow(alias: string, toFollowAlias: string): Promise<void>;
 
   getIsFollowerStatus(user: UserDto, selectedUser: UserDto): Promise<boolean>;
+
+  getAllFollowerAliases(userAlias: string): Promise<string[]>;
 }

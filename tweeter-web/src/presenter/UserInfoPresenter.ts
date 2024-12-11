@@ -49,7 +49,7 @@ export class UserInfoPresenter extends Presenter<UserInfoView> {
 
   async getNumbFollowers(authToken: AuthToken, displayedUser: User) {
     await this.doFailureReportingOperation(async () => {
-      this.followeeCount = await this.service.getFollowerCount(
+      this.followerCount = await this.service.getFollowerCount(
         authToken,
         displayedUser
       );

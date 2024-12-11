@@ -20,7 +20,7 @@ import {
 import { IStatusDAO } from "./IStatusDAO";
 export class StatusDAODynamo implements IStatusDAO {
   readonly storyTableName = "story";
-  readonly feedTableName = "feed";
+  readonly feedTableName = "feed2";
   readonly alias = "alias";
   readonly posterInfo = "poster_info";
   readonly posterAlias = "poster_alias";
@@ -152,27 +152,38 @@ export class StatusDAODynamo implements IStatusDAO {
   }
 
   async updateFeeds(status: StatusDto, followers: string[]): Promise<void> {
-    const writeRequests = followers.map((follower) => ({
-      PutRequest: {
-        Item: {
-          [this.alias]: follower,
-          [this.timestamp]: status.timestamp,
-          [this.posterInfo]: status.user,
-          [this.post]: status.post,
-          [this.segments]: status.segments,
+    if (!followers || followers.length === 0) {
+      throw new Error("FOLLOWERS ARRAY IS EMPTY");
+    }
+
+    // send updates to feed table in batches of 25 followers
+
+    const batchSize = 25;
+
+    for (let i = 0; i < followers.length; i += batchSize) {
+      const batch = followers.slice(i, i + batchSize);
+
+      const writeParams = {
+        RequestItems: {
+          [this.feedTableName]: batch.map((follower) => {
+            return {
+              PutRequest: {
+                Item: {
+                  [this.alias]: follower,
+                  [this.timestamp]: status.timestamp,
+                  [this.posterInfo]: status.user,
+                  [this.post]: status.post,
+                  [this.segments]: status.segments,
+                },
+              },
+            };
+          }),
         },
-      },
-    }));
+      };
 
-    const params = {
-      RequestItems: {
-        [this.feedTableName]: writeRequests,
-      },
-    };
-
-    await this.client.send(new BatchWriteCommand(params));
+      await this.client.send(new BatchWriteCommand(writeParams));
+    }
   }
-
   // ** CREATE/DELETE TABLES
 
   async deleteStoryTable(): Promise<void> {

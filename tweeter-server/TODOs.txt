@@ -8,7 +8,6 @@
 * REGISTER allows creation of new user even if that alias is already taken
 * problem rendering followers/followees count for users until follow button is clicked
 
-* make follower / followee count just stored as data in the user table
-* switch password has to be stored in user table? (probably not)
+* FIXED - make follower / followee count just stored as data in the user table
+
 * make it so when a user is followed or unfollowed the data is update through the SQS queues instead of directly in the table?
-* clean up DAO dependencies

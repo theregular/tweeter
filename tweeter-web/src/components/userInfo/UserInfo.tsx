@@ -32,8 +32,8 @@ const UserInfo = () => {
 
   const [presenter] = useState(new UserInfoPresenter(listener));
   const [isFollower, setIsFollower] = useState(false);
-  const [followeeCount, setFolloweeCount] = useState(-1);
-  const [followerCount, setFollowerCount] = useState(-1);
+  const [followeeCount, setFolloweeCount] = useState<number | null>(null);
+  const [followerCount, setFollowerCount] = useState<number | null>(null);
 
   useEffect(() => {
     const updateUserInfo = async () => {
@@ -93,10 +93,12 @@ const UserInfo = () => {
               </h2>
               <h3>{displayedUser.alias}</h3>
               <br />
-              {followeeCount > -1 && followerCount > -1 && (
+              {followerCount !== null && followeeCount !== null ? (
                 <div>
                   Followees: {followeeCount} Followers: {followerCount}
                 </div>
+              ) : (
+                <div>Loading counts...</div>
               )}
             </div>
             <form>

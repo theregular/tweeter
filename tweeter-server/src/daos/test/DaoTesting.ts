@@ -348,10 +348,44 @@ const sqsDao = new SQSDAOAWS();
 //     console.error("Error encoding image:", error);
 //   });
 
-userDao.updateFolloweeCount("@mario", 1).then((result) => {
-  console.log(result);
-});
+// userDao.updateFolloweeCount("@mario", 1).then((result) => {
+//   console.log(result);
+// });
 
-userDao.updateFollowerCount("@mario", 600).then((result) => {
+// userDao.updateFollowerCount("@mario", 600).then((result) => {
+//   console.log(result);
+// });
+
+// statusDao.deleteFeedTable().then((result) => {
+//   console.log(result);
+// });
+
+// const newStatus = {
+//   user: {
+//     alias: "@johndoe",
+//     firstName: "John",
+//     lastName: "Doe",
+//     imageUrl: "TODO: implement profile image",
+//   },
+//   post: "Hello, world!",
+//   timestamp: 0,
+//   segments: [
+//     {
+//       text: "Hello, world!",
+//       startPosition: 0,
+//       endPosition: 13,
+//       type: Type.text,
+//     },
+//   ],
+// };
+// statusDao.updateFeeds(newStatus, ["@janesmith"]).then((result) => {
+//   console.log(result);
+// });
+
+// statusDao.createFeedTable(5, 100).then((result) => {
+//   console.log(result);
+// });
+
+followDao.getAllFollowerAliases("@daisy").then((result) => {
   console.log(result);
 });

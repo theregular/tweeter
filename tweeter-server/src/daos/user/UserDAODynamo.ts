@@ -19,7 +19,7 @@ const bcrypt = require("bcryptjs");
 
 export class UserDAODynamo implements IUserDAO {
   //user table
-  readonly userTableName = "user";
+  readonly userTableName = "user2";
   readonly alias = "alias";
   readonly firstName = "first_name";
   readonly lastName = "last_name";
@@ -28,7 +28,7 @@ export class UserDAODynamo implements IUserDAO {
   private readonly followerCountAttribute = "follower_count";
 
   //password table
-  readonly passwordTableName = "password";
+  readonly passwordTableName = "password2";
   readonly password = "password";
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());

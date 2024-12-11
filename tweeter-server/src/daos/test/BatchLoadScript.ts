@@ -27,7 +27,7 @@ main();
 
 async function main() {
   console.log("Creating users");
-  await createUsers(0);
+  // await createUsers(0);
 
   console.log("Creating follows");
   await createFollows(0);

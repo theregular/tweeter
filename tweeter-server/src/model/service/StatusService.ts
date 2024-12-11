@@ -65,23 +65,28 @@ export class StatusService extends Service {
 
   public async sendMessagePostToFeed(status: StatusDto) {
     // Get followers who need feed updates
-    const alias = status.user.alias;
-    let lastItem: UserDto | null = null;
-    let followers: UserDto[] = [];
-    let hasMore = true;
-    while (hasMore) {
-      [followers, hasMore] = await this.followDAO.getPageOfFollowers(
-        alias,
-        25,
-        lastItem
-      );
-      lastItem = followers[followers.length - 1];
-      // Send to feed queue to update their feeds
-      await this.sqsDAO.updateFeed(
-        status,
-        followers.map((f) => f.alias)
-      );
-    }
+    // const alias = status.user.alias;
+    // let lastItem: UserDto | null = null;
+    // let followers: UserDto[] = [];
+    // let hasMore = true;
+    // while (hasMore) {
+    //   [followers, hasMore] = await this.followDAO.getPageOfFollowers(
+    //     alias,
+    //     25,
+    //     lastItem
+    //   );
+    //   lastItem = followers[followers.length - 1];
+    //   // Send to feed queue to update their feeds
+    //   const followerAliases = followers.map((f) => f.alias);
+    //   await this.sqsDAO.updateFeed(status, followerAliases);
+    // }
+    const followers = await this.followDAO.getAllFollowerAliases(
+      status.user.alias
+    );
+
+    // Send to feed queue to update their feeds
+
+    await this.sqsDAO.updateFeed(status, followers);
   }
 
   public async updateFeeds(status: StatusDto, followers: string[]) {

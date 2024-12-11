@@ -24,17 +24,17 @@ import {
 //Handle AuthToken
 
 export class FollowDAODynamo implements IFollowDAO {
-  readonly followTableName = "follow";
+  readonly followTableName = "follow2";
   readonly indexName = "followee_index";
   readonly followerHandle = "follower_handle";
   readonly followeeHandle = "followee_handle";
   readonly followerName = "follower_name";
   readonly followeeName = "followee_name";
-  readonly userTableName = "user";
+  readonly userTableName = "user2";
 
   //story & feed table stuff
   readonly storyTableName = "story";
-  readonly feedTableName = "feed";
+  readonly feedTableName = "feed2";
   readonly alias = "alias";
   readonly posterInfo = "poster_info";
   readonly posterAlias = "poster_alias";
@@ -157,6 +157,21 @@ export class FollowDAODynamo implements IFollowDAO {
       : undefined;
 
     return [followers, lastKey ? true : false];
+  }
+
+  async getAllFollowerAliases(userAlias: string): Promise<string[]> {
+    const params = {
+      TableName: this.followTableName,
+      IndexName: this.indexName,
+      KeyConditionExpression: `${this.followeeHandle} = :followee_handle`,
+      ExpressionAttributeValues: {
+        ":followee_handle": userAlias,
+      },
+    };
+
+    const result = await this.client.send(new QueryCommand(params));
+
+    return result.Items?.map((item) => item[this.followerHandle]) || [];
   }
 
   // async getFollowerCount(alias: string): Promise<number> {
