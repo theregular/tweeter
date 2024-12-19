@@ -3,9 +3,7 @@
 This is the completed twitter clone I made as part of the BYU CS340 Software Design class.
 
 Tech Stack:
-React/Typescript
-AWS Lambdas
-AWS DynamoDB
+React/Typescript, AWS Lambdas, AWS DynamoDB
 
 # Notes
 
